@@ -16,6 +16,99 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
+            margin: 0;
+            padding-top: 80px;
+        }
+
+        /* 네비게이션 바 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 70px;
+        }
+
+        .nav-brand h2 {
+            color: #333;
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #667eea;
+        }
+
+        .nav-user {
+            position: relative;
+        }
+
+        .user-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .user-btn:hover {
+            background: #5a67d8;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 10px 0;
+            min-width: 150px;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .user-menu a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .user-menu a:hover {
+            background: #f8f9fa;
         }
 
         .container {
@@ -348,10 +441,33 @@
     </style>
 </head>
 <body>
+    <!-- 상단 네비게이션 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎬 쇼츠 퀵에디터</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active">🏠 홈</a>
+                <a href="#" class="nav-link" onclick="showProjectsPage()">📁 프로젝트</a>
+                <a href="#" class="nav-link" onclick="showSettingsPage()">⚙️ 설정</a>
+                <a href="#" class="nav-link" onclick="showHelpPage()">❓ 도움말</a>
+            </div>
+            <div class="nav-user">
+                <button class="user-btn" onclick="toggleUserMenu()">👤 사용자</button>
+                <div id="user-menu" class="user-menu">
+                    <a href="#" onclick="showProfile()">👤 프로필</a>
+                    <a href="#" onclick="showAdmin()">⚙️ 관리자</a>
+                    <a href="#" onclick="logout()">🚪 로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <!-- 헤더 -->
         <div class="header">
-            <h1>🎬 쇼츠 퀵에디터</h1>
+            <h1>환영합니다!</h1>
             <div class="subtitle">올인원 쇼츠 제작 시스템</div>
         </div>
 
@@ -410,7 +526,69 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- 로그인 모달 -->
+    <div id="login-modal" class="new-project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>로그인</h2>
+                <p>계정에 로그인하세요</p>
+            </div>
+            <div class="form-group">
+                <label for="login-email">이메일</label>
+                <input type="email" id="login-email" placeholder="example@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">비밀번호</label>
+                <input type="password" id="login-password" placeholder="비밀번호를 입력하세요">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" onclick="hideLoginModal()">취소</button>
+                <button class="modal-btn create-btn" onclick="login()">로그인</button>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <p style="font-size: 0.9rem; color: #666;">
+                    계정이 없으신가요? 
+                    <a href="#" onclick="showSignupModal()" style="color: #667eea; text-decoration: none;">회원가입</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signup-modal" class="new-project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>회원가입</h2>
+                <p>새 계정을 만드세요</p>
+            </div>
+            <div class="form-group">
+                <label for="signup-name">이름</label>
+                <input type="text" id="signup-name" placeholder="이름을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="signup-email">이메일</label>
+                <input type="email" id="signup-email" placeholder="example@email.com">
+            </div>
+            <div class="form-group">
+                <label for="signup-password">비밀번호</label>
+                <input type="password" id="signup-password" placeholder="8자 이상 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="signup-password-confirm">비밀번호 확인</label>
+                <input type="password" id="signup-password-confirm" placeholder="비밀번호를 다시 입력하세요">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" onclick="hideSignupModal()">취소</button>
+                <button class="modal-btn create-btn" onclick="signup()">회원가입</button>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <p style="font-size: 0.9rem; color: #666;">
+                    이미 계정이 있으신가요? 
+                    <a href="#" onclick="showLoginModal()" style="color: #667eea; text-decoration: none;">로그인</a>
+                </p>
+            </div>
+        </div>
+    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
         import { 
@@ -425,6 +603,14 @@
             where
         } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
         
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+        
         // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyAUIaUeFp0BIZVlMpYwNe86_JP6Nn1DG2g",
@@ -437,13 +623,115 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
         
         // 전역 변수
         let allProjects = [];
         let filteredProjects = [];
         let currentFilter = 'all';
+        let currentUser = null;
+
+        // 인증 상태 변화 감지
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            updateUserInterface(user);
+            if (user) {
+                loadProjects();
+            } else {
+                showLoginModal();
+            }
+        });
+
+        // 사용자 인터페이스 업데이트
+        function updateUserInterface(user) {
+            const userBtn = document.querySelector('.user-btn');
+            if (user) {
+                userBtn.textContent = `👤 ${user.email.split('@')[0]}`;
+                document.querySelector('.projects-section').style.display = 'block';
+            } else {
+                userBtn.textContent = '🔐 로그인';
+                userBtn.onclick = showLoginModal;
+                document.querySelector('.projects-section').style.display = 'none';
+            }
+        }
         
-        // 새 프로젝트 모달 표시
+        // 로그인 모달 관련
+        window.showLoginModal = function() {
+            document.getElementById('login-modal').style.display = 'block';
+            document.getElementById('login-email').focus();
+        }
+
+        window.hideLoginModal = function() {
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        window.showSignupModal = function() {
+            hideLoginModal();
+            document.getElementById('signup-modal').style.display = 'block';
+            document.getElementById('signup-name').focus();
+        }
+
+        window.hideSignupModal = function() {
+            document.getElementById('signup-modal').style.display = 'none';
+            document.getElementById('signup-name').value = '';
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('signup-password-confirm').value = '';
+        }
+
+        // 로그인
+        window.login = async function() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                alert('이메일과 비밀번호를 모두 입력해주세요.');
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                hideLoginModal();
+                console.log('로그인 성공');
+            } catch (error) {
+                console.error('로그인 실패:', error);
+                alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+            }
+        }
+
+        // 회원가입
+        window.signup = async function() {
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const passwordConfirm = document.getElementById('signup-password-confirm').value;
+
+            if (!name || !email || !password || !passwordConfirm) {
+                alert('모든 정보를 입력해주세요.');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                alert('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            if (password.length < 8) {
+                alert('비밀번호는 8자 이상이어야 합니다.');
+                return;
+            }
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                hideSignupModal();
+                console.log('회원가입 성공');
+            } catch (error) {
+                console.error('회원가입 실패:', error);
+                alert('회원가입에 실패했습니다: ' + error.message);
+            }
+        }
         window.showNewProjectModal = function() {
             document.getElementById('new-project-modal').style.display = 'block';
             document.getElementById('project-name').focus();
@@ -463,10 +751,18 @@
                 alert('프로젝트 이름을 입력해주세요!');
                 return;
             }
+
+            if (!currentUser) {
+                alert('로그인이 필요합니다.');
+                showLoginModal();
+                return;
+            }
             
             try {
                 const newProject = {
                     name: projectName,
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
                     created_at: new Date(),
                     updated_at: new Date(),
                     status: 'editing',
@@ -495,6 +791,17 @@
         
         // 프로젝트 목록 로드
         window.loadProjects = async function() {
+            if (!currentUser) {
+                document.getElementById('projects-list').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔐</div>
+                        <h3>로그인이 필요합니다</h3>
+                        <p>프로젝트를 보려면 로그인해주세요</p>
+                    </div>
+                `;
+                return;
+            }
+
             try {
                 document.getElementById('projects-list').innerHTML = `
                     <div class="loading">
@@ -503,7 +810,11 @@
                     </div>
                 `;
                 
-                const q = query(collection(db, "projects"), orderBy("updated_at", "desc"));
+                const q = query(
+                    collection(db, "projects"), 
+                    where("userId", "==", currentUser.uid),
+                    orderBy("updated_at", "desc")
+                );
                 const querySnapshot = await getDocs(q);
                 
                 allProjects = [];
@@ -640,22 +951,81 @@
             displayProjects();
         }
         
-        // Enter키로 프로젝트 생성
+        // Enter키 이벤트
         document.getElementById('project-name').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                createNewProject();
-            }
+            if (e.key === 'Enter') createNewProject();
+        });
+
+        document.getElementById('login-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+
+        document.getElementById('signup-password-confirm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') signup();
         });
         
         // 모달 외부 클릭시 닫기
         document.getElementById('new-project-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                hideNewProjectModal();
-            }
+            if (e.target === this) hideNewProjectModal();
+        });
+
+        document.getElementById('login-modal').addEventListener('click', function(e) {
+            if (e.target === this) hideLoginModal();
+        });
+
+        document.getElementById('signup-modal').addEventListener('click', function(e) {
+            if (e.target === this) hideSignupModal();
         });
         
-        // 페이지 로드시 프로젝트 목록 불러오기
-        document.addEventListener('DOMContentLoaded', loadProjects);
+        // 사용자 메뉴 토글
+        window.toggleUserMenu = function() {
+            const menu = document.getElementById('user-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // 외부 클릭시 사용자 메뉴 닫기
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('user-menu');
+            const userBtn = document.querySelector('.user-btn');
+            
+            if (!userBtn.contains(e.target) && !userMenu.contains(e.target)) {
+                userMenu.style.display = 'none';
+            }
+        });
+
+        // 네비게이션 함수들
+        window.showProjectsPage = function() {
+            // 프로젝트 페이지로 이동 또는 프로젝트 섹션으로 스크롤
+            document.querySelector('.projects-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.showSettingsPage = function() {
+            alert('설정 페이지 (구현 예정)\n- 사용자 설정\n- 테마 변경\n- 알림 설정\n- 계정 관리');
+        }
+
+        window.showHelpPage = function() {
+            alert('도움말 페이지 (구현 예정)\n- 사용 가이드\n- FAQ\n- 동영상 튜토리얼\n- 고객 지원');
+        }
+
+        window.showProfile = function() {
+            alert('프로필 페이지 (구현 예정)\n- 개인 정보\n- 프로필 사진\n- 비밀번호 변경\n- 계정 설정');
+        }
+
+        window.showAdmin = function() {
+            // 관리자 페이지로 이동
+            window.location.href = 'admin.html';
+        }
+
+        window.logout = async function() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                try {
+                    await signOut(auth);
+                    console.log('로그아웃 성공');
+                } catch (error) {
+                    console.error('로그아웃 실패:', error);
+                }
+            }
+        }
     </script>
 </body>
 </html>
