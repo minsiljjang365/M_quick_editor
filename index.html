@@ -535,15 +535,10 @@
             deleteDoc, 
             doc,
             query,
-            orderBy,
-            where
+            orderBy
         } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
         
-        import { 
-            getAuth, 
-            signInAnonymously,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
         
         // Firebase 설정
         const firebaseConfig = {
@@ -557,7 +552,6 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
         
         // 전역 변수
         let allProjects = [];
@@ -601,17 +595,10 @@
                 alert('프로젝트 이름을 입력해주세요!');
                 return;
             }
-
-            if (!currentUser) {
-                alert('시스템 오류가 발생했습니다. 페이지를 새로고침해주세요.');
-                return;
-            }
             
             try {
                 const newProject = {
                     name: projectName,
-                    userId: currentUser.uid,
-                    userEmail: '게스트',
                     created_at: new Date(),
                     updated_at: new Date(),
                     status: 'editing',
@@ -640,17 +627,6 @@
         
         // 프로젝트 목록 로드
         window.loadProjects = async function() {
-            if (!currentUser) {
-                document.getElementById('projects-list').innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🔄</div>
-                        <h3>시스템 준비중...</h3>
-                        <p>잠시만 기다려주세요</p>
-                    </div>
-                `;
-                return;
-            }
-
             try {
                 document.getElementById('projects-list').innerHTML = `
                     <div class="loading">
@@ -661,7 +637,6 @@
                 
                 const q = query(
                     collection(db, "projects"), 
-                    where("userId", "==", currentUser.uid),
                     orderBy("updated_at", "desc")
                 );
                 const querySnapshot = await getDocs(q);
