@@ -66,51 +66,6 @@
             color: #667eea;
         }
 
-        .nav-user {
-            position: relative;
-        }
-
-        .user-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
-
-        .user-btn:hover {
-            background: #5a67d8;
-        }
-
-        .user-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            padding: 10px 0;
-            min-width: 150px;
-            display: none;
-            margin-top: 5px;
-        }
-
-        .user-menu a {
-            display: block;
-            padding: 10px 20px;
-            text-decoration: none;
-            color: #333;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
-
-        .user-menu a:hover {
-            background: #f8f9fa;
-        }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -452,13 +407,7 @@
                 <a href="#" class="nav-link" onclick="showProjectsPage()">📁 프로젝트</a>
                 <a href="#" class="nav-link" onclick="showSettingsPage()">⚙️ 설정</a>
                 <a href="#" class="nav-link" onclick="showHelpPage()">❓ 도움말</a>
-            </div>
-            <div class="nav-user">
-                <button class="user-btn" onclick="toggleUserMenu()">👤 게스트</button>
-                <div id="user-menu" class="user-menu">
-                    <a href="#" onclick="showProfile()">👤 프로필</a>
-                    <a href="#" onclick="showAdmin()">⚙️ 관리자</a>
-                </div>
+                <a href="#" class="nav-link" onclick="showAdminLogin()">🔐 관리자</a>
             </div>
         </div>
     </nav>
@@ -521,6 +470,28 @@
             <div class="modal-actions">
                 <button class="modal-btn cancel-btn" onclick="hideNewProjectModal()">취소</button>
                 <button class="modal-btn create-btn" onclick="createNewProject()">만들기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 관리자 로그인 모달 -->
+    <div id="admin-login-modal" class="new-project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 관리자 로그인</h2>
+                <p>관리자 계정으로 로그인하세요</p>
+            </div>
+            <div class="form-group">
+                <label for="admin-id">관리자 ID</label>
+                <input type="text" id="admin-id" placeholder="관리자 ID">
+            </div>
+            <div class="form-group">
+                <label for="admin-password">비밀번호</label>
+                <input type="password" id="admin-password" placeholder="비밀번호">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" onclick="hideAdminLoginModal()">취소</button>
+                <button class="modal-btn create-btn" onclick="adminLogin()">로그인</button>
             </div>
         </div>
     </div>
@@ -784,22 +755,6 @@
         document.getElementById('new-project-modal').addEventListener('click', function(e) {
             if (e.target === this) hideNewProjectModal();
         });
-        
-        // 사용자 메뉴 토글
-        window.toggleUserMenu = function() {
-            const menu = document.getElementById('user-menu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
-
-        // 외부 클릭시 사용자 메뉴 닫기
-        document.addEventListener('click', function(e) {
-            const userMenu = document.getElementById('user-menu');
-            const userBtn = document.querySelector('.user-btn');
-            
-            if (!userBtn.contains(e.target) && !userMenu.contains(e.target)) {
-                userMenu.style.display = 'none';
-            }
-        });
 
         // 네비게이션 함수들
         window.showProjectsPage = function() {
@@ -814,13 +769,54 @@
             alert('도움말 페이지 (구현 예정)');
         }
 
-        window.showProfile = function() {
-            alert('프로필 페이지 (구현 예정)');
+        // 관리자 로그인 관련 함수들
+        window.showAdminLogin = function() {
+            document.getElementById('admin-login-modal').style.display = 'block';
+            document.getElementById('admin-id').focus();
         }
 
-        window.showAdmin = function() {
-            alert('관리자 페이지 (구현 예정)');
+        window.hideAdminLoginModal = function() {
+            document.getElementById('admin-login-modal').style.display = 'none';
+            document.getElementById('admin-id').value = '';
+            document.getElementById('admin-password').value = '';
         }
+
+        window.adminLogin = function() {
+            const adminId = document.getElementById('admin-id').value.trim();
+            const adminPassword = document.getElementById('admin-password').value;
+
+            // 하드코딩된 관리자 계정
+            if (adminId === 'admin' && adminPassword === 'admin123') {
+                hideAdminLoginModal();
+                showAdminPage();
+            } else {
+                alert('관리자 계정 정보가 올바르지 않습니다.');
+                document.getElementById('admin-id').focus();
+            }
+        }
+
+        window.showAdminPage = function() {
+            // 관리자 페이지로 이동
+            window.location.href = 'admin.html';
+        }
+
+        // Enter키 이벤트 - 관리자 로그인
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const modal = document.getElementById('admin-login-modal');
+                if (modal.style.display === 'block') {
+                    adminLogin();
+                }
+            }
+        });
+
+        // 관리자 모달 외부 클릭시 닫기
+        document.addEventListener('click', function(e) {
+            const adminModal = document.getElementById('admin-login-modal');
+            if (e.target === adminModal) {
+                hideAdminLoginModal();
+            }
+        });
     </script>
 </body>
 </html>
