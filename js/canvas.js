@@ -1,4 +1,5 @@
-// canvas.js - 캔버스 관리 및 모든 편집 기능들 (완전판 + PPT 방식 + 자동저장)
+// canvas.js - 캔버스 관리 및 요소 추가/선택 관련 함수들
+// canvas.js - 캔버스 관리 및 모든 편집 기능들 (완전판)
 
 // 전역 변수
 let selectedElement = null;
@@ -8,48 +9,10 @@ let dragOffset = { x: 0, y: 0 };
 let canvasZoom = 1.0;
 let clipboard = null;
 
-// PPT 방식 추가 변수들
-let resizeHandles = [];
-let isResizing = false;
-let resizeHandle = '';
-let startRect = {};
-
+// 이미지 요소 추가
 // ===========================================
 // 🎯 요소 추가 기능들
 // ===========================================
-
-// 빠른 텍스트 추가 (PPT 방식)
-function addQuickText() {
-    const canvas = document.getElementById('canvas');
-    const textElement = document.createElement('div');
-    
-    textElement.className = 'canvas-element canvas-text';
-    textElement.contentEditable = true;
-    textElement.innerHTML = '텍스트를 입력하세요';
-    textElement.style.left = '50px';
-    textElement.style.top = '50px';
-    textElement.style.position = 'absolute';
-    textElement.style.minWidth = '100px';
-    textElement.style.minHeight = '30px';
-    textElement.style.padding = '8px';
-    textElement.style.fontSize = '16px';
-    textElement.style.color = '#000';
-    textElement.style.background = 'rgba(255,255,255,0.9)';
-    textElement.style.border = '1px dashed #ccc';
-    textElement.style.cursor = 'move';
-    textElement.style.outline = 'none';
-    textElement.style.wordWrap = 'break-word';
-    textElement.style.zIndex = '5';
-    textElement.id = 'text-' + (++elementCounter);
-    
-    // PPT 방식 이벤트 연결
-    setupPPTEvents(textElement);
-    
-    canvas.appendChild(textElement);
-    selectElementPPT(textElement);
-    
-    console.log('✅ PPT 방식 텍스트 추가됨');
-}
 
 // 빠른 이미지 추가
 function addQuickImage() {
@@ -81,18 +44,23 @@ function addQuickShape(shapeType) {
         element.style.backgroundColor = '#667eea';
     }
     
-    // PPT 방식 이벤트 연결
-    setupPPTEvents(element);
+    // 클릭 이벤트 추가
+    element.onclick = function() {
+        selectElement(this);
+    };
+    
+    // 드래그 이벤트 추가
+    setupDragEvents(element);
     
     canvas.appendChild(element);
-    selectElementPPT(element);
+    selectElement(element);
 }
 
-// 이미지 요소 추가 (개선된 버전)
+// 이미지 요소 추가 (기존 함수 개선)
 function addImageElement(src, x, y) {
     const canvas = document.getElementById('canvas');
     const element = document.createElement('img');
-    
+
     element.className = 'canvas-element canvas-image';
     element.src = src;
     element.style.left = x + 'px';
@@ -102,25 +70,31 @@ function addImageElement(src, x, y) {
     element.style.position = 'absolute';
     element.style.cursor = 'move';
     element.id = 'element-' + (++elementCounter);
+    element.style.zIndex = '5'; // 이미지는 중간 레이어
     element.style.zIndex = '5';
-    
-    // PPT 방식 이벤트 연결
-    setupPPTEvents(element);
+
+    element.onclick = function() {
+        selectElement(this);
+    };
+
+    // 🔥 드래그 이벤트 추가 (핵심!)
+    setupDragEvents(element);
     
     canvas.appendChild(element);
-    selectElementPPT(element);
+    selectElement(element);
 }
 
+// 템플릿을 배경으로 추가 (맨 아래 레이어)
 // 템플릿을 배경으로 추가 (기존 함수 유지)
 function addTemplateAsBackground(imageSrc, templateName) {
     const canvas = document.getElementById('canvas');
-    
+
     // 기존 배경 템플릿 제거
     const existingBg = canvas.querySelector('.canvas-background-template');
     if (existingBg) {
         existingBg.remove();
     }
-    
+
     const bgElement = document.createElement('img');
     bgElement.className = 'canvas-element canvas-background-template';
     bgElement.src = imageSrc;
@@ -129,447 +103,29 @@ function addTemplateAsBackground(imageSrc, templateName) {
     bgElement.style.width = '100%';
     bgElement.style.height = '100%';
     bgElement.style.objectFit = 'cover';
+    bgElement.style.zIndex = '1'; // 가장 아래 레이어
+    bgElement.style.pointerEvents = 'none'; // 클릭 이벤트 차단
     bgElement.style.zIndex = '1';
     bgElement.style.pointerEvents = 'none';
     bgElement.id = 'background-template';
     bgElement.alt = templateName;
-    
+
+    // 캔버스의 맨 앞에 추가 (z-index로 아래 배치)
     canvas.insertBefore(bgElement, canvas.firstChild);
-    
+
     console.log(`배경 템플릿 적용됨: ${templateName}`);
 }
 
-// ===========================================
-// 🎨 PPT 방식 이벤트 시스템 (자동저장 통합)
-// ===========================================
-
-// PPT 방식 이벤트 설정 (자동저장 추가)
-function setupPPTEvents(element) {
-    // 클릭 이벤트 (선택)
-    element.onclick = function(e) {
-        selectElementPPT(this);
-        e.stopPropagation();
-    };
-    
-    // 더블클릭 이벤트 (편집)
-    element.ondblclick = function(e) {
-        if (this.classList.contains('canvas-text')) {
-            this.focus();
-            // 텍스트 전체 선택
-            const range = document.createRange();
-            range.selectNodeContents(this);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
-        e.stopPropagation();
-    };
-    
-    // 🔥 텍스트 편집 자동저장 추가
-    if (element.classList.contains('canvas-text')) {
-        // 텍스트 입력 중 자동저장
-        element.oninput = function() {
-            console.log('📝 텍스트 변경됨, 자동저장 중...');
-            if (typeof saveCanvasState === 'function') {
-                // 500ms 후 저장 (너무 자주 저장하지 않도록)
-                clearTimeout(element.saveTimeout);
-                element.saveTimeout = setTimeout(() => {
-                    saveCanvasState();
-                    console.log('💾 텍스트 자동저장 완료');
-                }, 500);
-            }
-        };
-        
-        // 포커스 잃을 때 즉시 저장
-        element.onblur = function() {
-            console.log('📝 텍스트 편집 종료, 즉시 저장');
-            if (typeof saveCanvasState === 'function') {
-                saveCanvasState();
-            }
-        };
-        
-        // Enter 키 입력시 저장
-        element.onkeypress = function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                console.log('📝 Enter 키로 편집 종료, 저장');
-                this.blur(); // 편집 모드 종료
-                if (typeof saveCanvasState === 'function') {
-                    saveCanvasState();
-                }
-            }
-        };
-    }
-    
-    // 드래그 시작
-    element.onmousedown = function(e) {
-        if (e.target.classList.contains('resize-handle')) {
-            return; // 리사이즈 핸들 클릭시는 드래그 안함
-        }
-        startDragPPT(e, this);
-        e.preventDefault();
-    };
-}
-
-// PPT 방식 요소 선택
-function selectElementPPT(element) {
-    // 배경 템플릿은 선택 불가
-    if (element.classList.contains('canvas-background-template')) {
-        return;
-    }
-    
-    // 기존 선택 해제
-    clearSelectionPPT();
-    
-    // 새 요소 선택
-    selectedElement = element;
-    element.style.outline = '2px solid #0078d4';
-    
-    // PPT 방식 리사이즈 핸들 추가
-    addResizeHandlesPPT(element);
-    
-    // 선택된 도구들 표시
-    const selectedTools = document.getElementById('selected-tools');
-    if (selectedTools) selectedTools.style.display = 'block';
-    
-    // PPT 편집기 업데이트
-    if (typeof updatePPTEditor === 'function') {
-        updatePPTEditor(element);
-    }
-    
-    console.log('🎯 PPT 방식 선택됨:', element.id);
-}
-
-// PPT 방식 선택 해제
-function clearSelectionPPT() {
-    if (selectedElement) {
-        selectedElement.style.outline = '';
-        removeResizeHandlesPPT();
-    }
-    selectedElement = null;
-    
-    const selectedTools = document.getElementById('selected-tools');
-    if (selectedTools) selectedTools.style.display = 'none';
-}
-
-// PPT 방식 리사이즈 핸들 추가
-function addResizeHandlesPPT(element) {
-    removeResizeHandlesPPT();
-    
-    const positions = [
-        {name: 'nw', style: 'top: -4px; left: -4px; cursor: nw-resize;'},
-        {name: 'n', style: 'top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize;'},
-        {name: 'ne', style: 'top: -4px; right: -4px; cursor: ne-resize;'},
-        {name: 'e', style: 'top: 50%; right: -4px; transform: translateY(-50%); cursor: e-resize;'},
-        {name: 'se', style: 'bottom: -4px; right: -4px; cursor: se-resize;'},
-        {name: 's', style: 'bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize;'},
-        {name: 'sw', style: 'bottom: -4px; left: -4px; cursor: sw-resize;'},
-        {name: 'w', style: 'top: 50%; left: -4px; transform: translateY(-50%); cursor: w-resize;'}
-    ];
-    
-    positions.forEach(pos => {
-        const handle = document.createElement('div');
-        handle.className = 'resize-handle resize-handle-' + pos.name;
-        handle.style.cssText = `
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #0078d4;
-            border: 1px solid white;
-            z-index: 1000;
-            ${pos.style}
-        `;
-        handle.dataset.direction = pos.name;
-        
-        // 리사이즈 이벤트
-        handle.onmousedown = function(e) {
-            startResizePPT(e, pos.name);
-            e.stopPropagation();
-            e.preventDefault();
-        };
-        
-        element.appendChild(handle);
-        resizeHandles.push(handle);
-    });
-}
-
-// PPT 방식 리사이즈 핸들 제거
-function removeResizeHandlesPPT() {
-    resizeHandles.forEach(handle => {
-        if (handle.parentNode) {
-            handle.parentNode.removeChild(handle);
-        }
-    });
-    resizeHandles = [];
-}
-
-// PPT 방식 드래그 시작
-function startDragPPT(e, element) {
-    isDragging = true;
-    
-    const rect = element.getBoundingClientRect();
-    const canvasRect = document.getElementById('canvas').getBoundingClientRect();
-    
-    dragOffset.x = e.clientX - rect.left;
-    dragOffset.y = e.clientY - rect.top;
-    
-    element.style.zIndex = '999';
-    
-    // 전역 마우스 이벤트 연결
-    document.onmousemove = function(e) {
-        dragPPT(e, element);
-    };
-    
-    document.onmouseup = function() {
-        stopDragPPT(element);
-    };
-}
-
-// PPT 방식 드래그
-function dragPPT(e, element) {
-    if (!isDragging) return;
-    
+// 배경 템플릿 제거
+function removeBackgroundTemplate() {
     const canvas = document.getElementById('canvas');
-    const canvasRect = canvas.getBoundingClientRect();
-    
-    let newX = e.clientX - canvasRect.left - dragOffset.x;
-    let newY = e.clientY - canvasRect.top - dragOffset.y;
-    
-    // 경계 제한
-    newX = Math.max(0, Math.min(newX, canvas.offsetWidth - element.offsetWidth));
-    newY = Math.max(0, Math.min(newY, canvas.offsetHeight - element.offsetHeight));
-    
-    element.style.left = newX + 'px';
-    element.style.top = newY + 'px';
-    
-    // 편집기 위치값 업데이트
-    updateEditorPositionValues(element);
-}
-
-// PPT 방식 드래그 종료
-function stopDragPPT(element) {
-    isDragging = false;
-    element.style.zIndex = '';
-    
-    document.onmousemove = null;
-    document.onmouseup = null;
-    
-    // 실시간 저장
-    if (typeof saveCanvasState === 'function') {
-        saveCanvasState();
-    }
-}
-
-// PPT 방식 리사이즈 시작
-function startResizePPT(e, direction) {
-    isResizing = true;
-    resizeHandle = direction;
-    
-    const rect = selectedElement.getBoundingClientRect();
-    const canvasRect = document.getElementById('canvas').getBoundingClientRect();
-    
-    startRect = {
-        left: rect.left - canvasRect.left,
-        top: rect.top - canvasRect.top,
-        width: rect.width,
-        height: rect.height,
-        mouseX: e.clientX,
-        mouseY: e.clientY
-    };
-    
-    document.onmousemove = resizePPT;
-    document.onmouseup = stopResizePPT;
-}
-
-// PPT 방식 리사이즈
-function resizePPT(e) {
-    if (!isResizing || !selectedElement) return;
-    
-    const deltaX = e.clientX - startRect.mouseX;
-    const deltaY = e.clientY - startRect.mouseY;
-    
-    let newLeft = startRect.left;
-    let newTop = startRect.top;
-    let newWidth = startRect.width;
-    let newHeight = startRect.height;
-    
-    // 방향에 따른 리사이즈
-    switch (resizeHandle) {
-        case 'se': // 우하단
-            newWidth = Math.max(50, startRect.width + deltaX);
-            newHeight = Math.max(30, startRect.height + deltaY);
-            break;
-        case 'sw': // 좌하단
-            newWidth = Math.max(50, startRect.width - deltaX);
-            newHeight = Math.max(30, startRect.height + deltaY);
-            newLeft = startRect.left + deltaX;
-            if (newWidth === 50) newLeft = startRect.left + startRect.width - 50;
-            break;
-        case 'ne': // 우상단
-            newWidth = Math.max(50, startRect.width + deltaX);
-            newHeight = Math.max(30, startRect.height - deltaY);
-            newTop = startRect.top + deltaY;
-            if (newHeight === 30) newTop = startRect.top + startRect.height - 30;
-            break;
-        case 'nw': // 좌상단
-            newWidth = Math.max(50, startRect.width - deltaX);
-            newHeight = Math.max(30, startRect.height - deltaY);
-            newLeft = startRect.left + deltaX;
-            newTop = startRect.top + deltaY;
-            if (newWidth === 50) newLeft = startRect.left + startRect.width - 50;
-            if (newHeight === 30) newTop = startRect.top + startRect.height - 30;
-            break;
-        case 'n': // 상단
-            newHeight = Math.max(30, startRect.height - deltaY);
-            newTop = startRect.top + deltaY;
-            if (newHeight === 30) newTop = startRect.top + startRect.height - 30;
-            break;
-        case 's': // 하단
-            newHeight = Math.max(30, startRect.height + deltaY);
-            break;
-        case 'e': // 우측
-            newWidth = Math.max(50, startRect.width + deltaX);
-            break;
-        case 'w': // 좌측
-            newWidth = Math.max(50, startRect.width - deltaX);
-            newLeft = startRect.left + deltaX;
-            if (newWidth === 50) newLeft = startRect.left + startRect.width - 50;
-            break;
-    }
-    
-    // 스타일 적용
-    selectedElement.style.left = newLeft + 'px';
-    selectedElement.style.top = newTop + 'px';
-    selectedElement.style.width = newWidth + 'px';
-    selectedElement.style.height = newHeight + 'px';
-    
-    // 편집기 위치값 업데이트
-    updateEditorPositionValues(selectedElement);
-}
-
-// PPT 방식 리사이즈 종료
-function stopResizePPT() {
-    isResizing = false;
-    resizeHandle = '';
-    
-    document.onmousemove = null;
-    document.onmouseup = null;
-    
-    // 실시간 저장
-    if (typeof saveCanvasState === 'function') {
-        saveCanvasState();
-    }
-}
-
+    const bgTemplate = canvas.querySelector('.canvas-background-template');
+    if (bgTemplate) {
+        bgTemplate.remove();
+        console.log('배경 템플릿 제거됨');
+        return true;
 // ===========================================
-// 💾 자동저장 및 프로젝트 관리
-// ===========================================
-
-// 캔버스 상태 자동저장
-function saveCanvasState() {
-    try {
-        const projectData = {
-            name: document.getElementById('project-title').textContent,
-            canvas: document.getElementById('canvas').innerHTML,
-            timestamp: new Date().toISOString(),
-            elements: []
-        };
-        
-        // 캔버스 요소들 수집
-        const elements = document.querySelectorAll('.canvas-element:not(.canvas-background-template)');
-        elements.forEach((element, index) => {
-            const elementData = {
-                id: element.id,
-                type: getElementType(element),
-                style: element.style.cssText,
-                position: {
-                    left: element.style.left,
-                    top: element.style.top
-                }
-            };
-            
-            // 텍스트 내용 저장
-            if (element.classList.contains('canvas-text')) {
-                elementData.content = element.innerHTML;
-                elementData.textContent = element.textContent;
-            }
-            // 이미지 소스 저장
-            else if (element.classList.contains('canvas-image')) {
-                elementData.src = element.src;
-            }
-            
-            projectData.elements.push(elementData);
-        });
-        
-        // localStorage에 저장
-        localStorage.setItem('currentProject', JSON.stringify(projectData));
-        localStorage.setItem('lastSaved', new Date().toLocaleString());
-        
-        console.log('💾 프로젝트 자동저장 완료:', projectData.elements.length + '개 요소');
-        
-    } catch (error) {
-        console.error('❌ 자동저장 실패:', error);
-    }
-}
-
-// 프로젝트 불러오기 (개선된 버전)
-function loadProject() {
-    const saved = localStorage.getItem('currentProject');
-    if (saved) {
-        try {
-            const projectData = JSON.parse(saved);
-            
-            // 프로젝트 제목 복원
-            document.getElementById('project-title').textContent = projectData.name;
-            
-            // 캔버스 초기화
-            const canvas = document.getElementById('canvas');
-            canvas.innerHTML = '';
-            
-            // 요소들 복원
-            projectData.elements.forEach(elementData => {
-                let element;
-                
-                if (elementData.type === 'text') {
-                    element = document.createElement('div');
-                    element.className = 'canvas-element canvas-text';
-                    element.contentEditable = true;
-                    element.innerHTML = elementData.content || elementData.textContent || '텍스트를 입력하세요';
-                } else if (elementData.type === 'image') {
-                    element = document.createElement('img');
-                    element.className = 'canvas-element canvas-image';
-                    element.src = elementData.src;
-                } else if (elementData.type === 'shape') {
-                    element = document.createElement('div');
-                    element.className = 'canvas-element canvas-shape';
-                }
-                
-                if (element) {
-                    element.id = elementData.id;
-                    element.style.cssText = elementData.style;
-                    element.style.position = 'absolute';
-                    element.style.cursor = 'move';
-                    
-                    // PPT 방식 이벤트 연결
-                    setupPPTEvents(element);
-                    
-                    canvas.appendChild(element);
-                }
-            });
-            
-            const lastSaved = localStorage.getItem('lastSaved');
-            console.log(`📂 프로젝트 불러오기 완료: ${projectData.elements.length}개 요소 (저장시간: ${lastSaved})`);
-            return true;
-            
-        } catch (error) {
-            console.error('❌ 프로젝트 불러오기 실패:', error);
-            localStorage.removeItem('currentProject'); // 손상된 데이터 제거
-        }
-    }
-    return false;
-}
-
-// ===========================================
-// 🖱️ 기존 드래그 이동 기능 (호환성 유지)
+// 🖱️ 드래그 이동 기능 (핵심!)
 // ===========================================
 
 function setupDragEvents(element) {
@@ -652,10 +208,12 @@ function updateEditorPositionValues(element) {
         if (imageX) imageX.value = parseInt(element.style.left);
         if (imageY) imageY.value = parseInt(element.style.top);
     }
+    return false;
 }
 
+// 요소 선택
 // ===========================================
-// 🎯 요소 선택 및 관리 (호환성 유지)
+// 🎯 요소 선택 및 관리
 // ===========================================
 
 // 요소 선택 (기존 함수 개선)
@@ -664,13 +222,13 @@ function selectElement(element) {
     if (element.classList.contains('canvas-background-template')) {
         return;
     }
-    
+
     // 이전 선택 해제
     if (selectedElement) {
         selectedElement.classList.remove('selected');
         selectedElement.style.outline = '';
     }
-    
+
     // 새 요소 선택
     selectedElement = element;
     element.classList.add('selected');
@@ -679,8 +237,9 @@ function selectElement(element) {
     // 선택된 도구들 표시
     const selectedTools = document.getElementById('selected-tools');
     if (selectedTools) selectedTools.style.display = 'block';
-    
+
     // PPT 편집기 업데이트
+    updatePPTEditor(element);
     if (typeof updatePPTEditor === 'function') {
         updatePPTEditor(element);
     }
@@ -688,21 +247,29 @@ function selectElement(element) {
 
 // 선택 해제
 function deselectAllElements() {
-    clearSelectionPPT(); // PPT 방식으로 통합
+    if (selectedElement) {
+        selectedElement.classList.remove('selected');
+        selectedElement.style.outline = '';
+        selectedElement = null;
+    }
+    
+    const selectedTools = document.getElementById('selected-tools');
+    if (selectedTools) selectedTools.style.display = 'none';
 }
 
+// 선택된 요소 삭제
 // 선택된 요소 삭제 (기존 함수 유지)
 function deleteSelectedElement() {
     if (selectedElement) {
         selectedElement.remove();
         selectedElement = null;
-        
+
         // 편집기 초기화
         const noSelection = document.getElementById('no-selection');
         const textEditor = document.getElementById('text-editor');
         const imageEditor = document.getElementById('image-editor');
         const selectedTools = document.getElementById('selected-tools');
-        
+
         if (noSelection) noSelection.style.display = 'block';
         if (textEditor) textEditor.style.display = 'none';
         if (imageEditor) imageEditor.style.display = 'none';
@@ -847,19 +414,19 @@ function duplicateElement() {
             if (typeof selectTextElement === 'function') {
                 selectTextElement(this);
             } else {
-                selectElementPPT(this);
+                selectElement(this);
             }
         };
     } else if (type === 'image') {
         newElement = document.createElement('img');
         newElement.src = selectedElement.src;
         newElement.onclick = function() {
-            selectElementPPT(this);
+            selectElement(this);
         };
     } else if (type === 'shape') {
         newElement = document.createElement('div');
         newElement.onclick = function() {
-            selectElementPPT(this);
+            selectElement(this);
         };
     } else {
         return;
@@ -876,11 +443,11 @@ function duplicateElement() {
     newElement.style.left = (currentLeft + 20) + 'px';
     newElement.style.top = (currentTop + 20) + 'px';
     
-    // PPT 방식 이벤트 추가
-    setupPPTEvents(newElement);
+    // 드래그 이벤트 추가
+    setupDragEvents(newElement);
     
     canvas.appendChild(newElement);
-    selectElementPPT(newElement);
+    selectElement(newElement);
     
     if (typeof saveCanvasState === 'function') saveCanvasState();
 }
@@ -904,6 +471,7 @@ function zoomOut() {
     applyZoom();
 }
 
+// 배경 변경 (기존 함수 - 단색 배경용)
 function applyZoom() {
     const canvas = document.getElementById('canvas');
     const zoomLevel = document.getElementById('zoom-level');
@@ -917,11 +485,12 @@ function applyZoom() {
 }
 
 // ===========================================
-// 📄 캔버스 관리
+// 🔄 캔버스 관리
 // ===========================================
 
 // 배경 변경 (기존 함수 유지)
 function changeBackground(background) {
+    // 배경 템플릿이 있으면 제거
     removeBackgroundTemplate();
     document.getElementById('canvas').style.background = background;
     if (typeof saveCanvasState === 'function') saveCanvasState();
@@ -939,30 +508,32 @@ function removeBackgroundTemplate() {
     return false;
 }
 
+// 캔버스 초기화 (모든 요소 제거)
 // 캔버스 초기화 (기존 함수 유지)
 function clearCanvas() {
     if (confirm('캔버스의 모든 요소를 삭제하시겠습니까?')) {
         const canvas = document.getElementById('canvas');
         const elements = canvas.querySelectorAll('.canvas-element');
         elements.forEach(element => element.remove());
-        
-        clearSelectionPPT();
+
+        selectedElement = null;
         const noSelection = document.getElementById('no-selection');
         const textEditor = document.getElementById('text-editor');
         const imageEditor = document.getElementById('image-editor');
         const selectedTools = document.getElementById('selected-tools');
-        
+
         if (noSelection) noSelection.style.display = 'block';
         if (textEditor) textEditor.style.display = 'none';
         if (imageEditor) imageEditor.style.display = 'none';
         if (selectedTools) selectedTools.style.display = 'none';
-        
+
         // 배경도 초기화
         canvas.style.background = '#333';
-        
+
         if (typeof saveCanvasState === 'function') saveCanvasState();
         console.log('캔버스 초기화 완료');
     }
+}
 }
 
 // 캔버스 리셋 (줌 포함)
@@ -1001,7 +572,7 @@ function getElementType(element) {
 // ===========================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 전역 드래그 이벤트 설정 (호환성)
+    // 전역 드래그 이벤트 설정
     setupGlobalDragEvents();
     
     // 캔버스 클릭시 선택 해제
@@ -1009,10 +580,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (canvas) {
         canvas.addEventListener('click', function(e) {
             if (e.target === canvas) {
-                clearSelectionPPT();
+                deselectAllElements();
             }
         });
     }
     
-    console.log('✅ Canvas.js 완전판 로드 완료 - PPT 방식 편집 + 자동저장 + 모든 기능 활성화');
+    console.log('✅ Canvas.js 완전판 로드 완료 - 드래그, 정렬, 레이어 모든 기능 활성화');
 });
