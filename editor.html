@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>편집 - 쇼츠 퀵에디터</title>
+    <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+    <!-- 상단 네비게이션 -->
+    <div id="navbar">
+        <button onclick="goHome()">🏠 홈</button>
+        <button onclick="openAdmin()">⚙️ 관리자</button>
+        <button onclick="saveProject()">💾 저장</button>
+        <div id="project-title">프로젝트: 테스트 프로젝트</div>
+    </div>
+    
+    <!-- 메인 편집 영역 -->
+    <div id="main-editor">
+        <!-- 캔버스 영역 -->
+        <div id="canvas-area">
+            <div id="canvas" ondrop="dropOnCanvas(event)" ondragover="allowDrop(event)">
+                <!-- 편집 요소들이 여기에 추가됨 -->
+            </div>
+        </div>
+        
+        <!-- PPT 편집기 -->
+        <div id="ppt-editor">
+            <div id="ppt-header">🎨 요소 편집기</div>
+            <div id="ppt-content">
+                <div id="no-selection" style="text-align: center; color: #888; margin-top: 50px;">
+                    <p>편집할 요소를 선택하세요</p>
+                    <p style="font-size: 12px; margin-top: 10px;">캔버스의 텍스트나 이미지를<br>클릭하면 편집할 수 있습니다</p>
+                </div>
+                
+                <!-- 텍스트 편집 -->
+                <div id="text-editor" style="display: none;">
+                    <div class="ppt-section">
+                        <h4>텍스트 내용</h4>
+                        <div class="ppt-control">
+                            <textarea id="text-content" rows="3" placeholder="텍스트를 입력하세요"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
+                        <h4>글꼴 스타일</h4>
+                        <div class="ppt-control">
+                            <label>크기</label>
+                            <input type="range" id="text-size" min="12" max="48" value="16">
+                        </div>
+                        <div class="ppt-control">
+                            <label>색상</label>
+                            <input type="color" id="text-color" value="#ffffff">
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
+                        <h4>위치</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="ppt-control" style="flex: 1;">
+                                <label>X</label>
+                                <input type="number" id="text-x" min="0">
+                            </div>
+                            <div class="ppt-control" style="flex: 1;">
+                                <label>Y</label>
+                                <input type="number" id="text-y" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
+                        <div class="ppt-control">
+                            <button onclick="deleteSelectedElement()">🗑️ 삭제</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 이미지 편집 -->
+                <div id="image-editor" style="display: none;">
+                    <div class="ppt-section">
+                        <h4>크기</h4>
+                        <div class="ppt-control">
+                            <label>너비</label>
+                            <input type="range" id="image-width" min="50" max="280" value="150">
+                        </div>
+                        <div class="ppt-control">
+                            <label>높이</label>
+                            <input type="range" id="image-height" min="50" max="450" value="150">
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
+                        <h4>위치</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="ppt-control" style="flex: 1;">
+                                <label>X</label>
+                                <input type="number" id="image-x" min="0">
+                            </div>
+                            <div class="ppt-control" style="flex: 1;">
+                                <label>Y</label>
+                                <input type="number" id="image-y" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
+                        <div class="ppt-control">
+                            <button onclick="deleteSelectedElement()">🗑️ 삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 소스 패널 -->
+        <div id="source-panel">
+            <div id="source-tabs">
+                <button class="source-tab active" onclick="switchTab('media')">📁<br>미디어</button>
+                <button class="source-tab" onclick="switchTab('text')">📝<br>텍스트</button>
+                <button class="source-tab" onclick="switchTab('audio')">🎵<br>음성</button>
+                <button class="source-tab" onclick="switchTab('template')">🎨<br>템플릿</button>
+            </div>
+            
+            <div id="source-content">
+                <!-- 미디어 소스 -->
+                <div id="media-sources" class="source-section active">
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="image" data-src="https://via.placeholder.com/200x150/4A90E2/white?text=샘플+이미지">
+                        <div class="source-item-title">📷 샘플 이미지</div>
+                        <div class="source-item-desc">드래그해서 캔버스에 추가</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="image" data-src="https://via.placeholder.com/200x150/E74C3C/white?text=로고">
+                        <div class="source-item-title">🏷️ 로고</div>
+                        <div class="source-item-desc">브랜드 로고 이미지</div>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">📤 직접 업로드</div>
+                        <input type="file" accept="image/*,video/*" onchange="uploadFile(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">🌐 무료 스톡</div>
+                        <div class="source-item-desc">API로 무료 이미지 검색</div>
+                        <input type="text" placeholder="검색어 입력" id="stock-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+                        <button onclick="searchStockImages()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">🎨 AI 이미지 생성</div>
+                        <div class="source-item-desc">AI로 이미지 생성</div>
+                        <textarea placeholder="생성할 이미지 설명" id="ai-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+                        <button onclick="generateAIImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #9b59b6; border: none; color: white; border-radius: 3px; cursor: pointer;">생성</button>
+                    </div>
+                </div>
+                
+                <!-- 텍스트 소스 -->
+                <div id="text-sources" class="source-section">
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="제목 텍스트">
+                        <div class="source-item-title">📝 제목</div>
+                        <div class="source-item-desc">메인 제목용 텍스트</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="설명 텍스트">
+                        <div class="source-item-title">💬 설명</div>
+                        <div class="source-item-desc">부제목이나 설명용</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="클릭하세요!">
+                        <div class="source-item-title">🎯 CTA</div>
+                        <div class="source-item-desc">행동 유도 메시지</div>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">✏️ 커스텀 텍스트</div>
+                        <input type="text" placeholder="텍스트 입력" id="custom-text" style="width: 100%; margin-top: 5px;">
+                        <button onclick="addCustomText()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">추가</button>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">📜 대본 작성</div>
+                        <div class="source-item-desc">동영상 대본</div>
+                        <div class="button-group">
+                            <button onclick="showScriptEditor('manual')">직접작성</button>
+                            <button onclick="showScriptEditor('ai')">AI작성</button>
+                        </div>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">🎙️ 나레이션</div>
+                        <div class="source-item-desc">음성 대본</div>
+                        <div class="button-group">
+                            <button onclick="showNarrationEditor('manual')">직접작성</button>
+                            <button onclick="showNarrationEditor('ai')">AI작성</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 음성 소스 -->
+                <div id="audio-sources" class="source-section">
+                    <div class="source-item">
+                        <div class="source-item-title">🎵 배경음악</div>
+                        <div class="source-item-desc">프로젝트 배경음악 설정</div>
+                        <input type="file" accept="audio/*" onchange="uploadBGM(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">📤 음성파일 업로드</div>
+                        <div class="source-item-desc">나레이션, 대사 등</div>
+                        <input type="file" accept="audio/*" onchange="uploadAudio(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">📊 보유 효과음</div>
+                        <div class="source-item-desc">업로드한 효과음 선택</div>
+                        <select id="owned-sfx" onchange="selectOwnedSFX()" style="width: 100%; margin-top: 5px;">
+                            <option value="">효과음 선택</option>
+                            <option value="click">클릭 소리</option>
+                            <option value="whoosh">움직임 소리</option>
+                            <option value="ding">알림음</option>
+                        </select>
+                        <input type="file" accept="audio/*" onchange="uploadSFX(this)" style="width: 100%; margin-top: 5px; font-size: 11px;" placeholder="새 효과음 추가">
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">🌐 무료 효과음</div>
+                        <div class="source-item-desc">API로 무료 효과음 검색</div>
+                        <input type="text" placeholder="효과음 검색 (예: 박수, 폭발)" id="sfx-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+                        <button onclick="searchFreeSFX()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">🎙️ 음성 녹음</div>
+                        <div class="source-item-desc">실시간 녹음</div>
+                        <div class="button-group">
+                            <button onclick="startRecording()">🔴 녹음</button>
+                            <button onclick="stopRecording()">⏹️ 정지</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 템플릿 소스 -->
+                <div id="template-sources" class="source-section">
+                    <div class="source-item" onclick="changeBackground('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')">
+                        <div class="source-item-title">🌅 그라데이션</div>
+                        <div class="source-item-desc">파란색 그라데이션</div>
+                    </div>
+                    
+                    <div class="source-item" onclick="changeBackground('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')">
+                        <div class="source-item-title">🌺 핑크</div>
+                        <div class="source-item-desc">핑크 그라데이션</div>
+                    </div>
+                    
+                    <div class="source-item" onclick="changeBackground('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')">
+                        <div class="source-item-title">🌊 바다</div>
+                        <div class="source-item-desc">시원한 블루</div>
+                    </div>
+                    
+                    <div class="source-item" onclick="changeBackground('#000000')">
+                        <div class="source-item-title">⚫ 검정</div>
+                        <div class="source-item-desc">심플한 검정 배경</div>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">📤 템플릿 업로드</div>
+                        <div class="source-item-desc">직접 제작한 템플릿</div>
+                        <input type="file" accept=".json,.html,.zip" onchange="uploadTemplate(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+                        <div class="source-item-desc" style="margin-top: 5px; font-size: 10px;">JSON, HTML, ZIP 파일 지원</div>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">📁 내 템플릿</div>
+                        <div class="source-item-desc">업로드한 템플릿 목록</div>
+                        <select id="my-templates" onchange="loadMyTemplate()" style="width: 100%; margin-top: 5px;">
+                            <option value="">템플릿 선택</option>
+                            <option value="template1">여름 휴가 템플릿</option>
+                            <option value="template2">비즈니스 프레젠테이션</option>
+                            <option value="template3">생일 축하 템플릿</option>
+                        </select>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">👀 템플릿 미리보기</div>
+                        <div class="source-item-desc">템플릿 수정 및 저장</div>
+                        <div class="button-group">
+                            <button onclick="previewTemplate()">미리보기</button>
+                            <button onclick="editTemplate()">편집</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 분리된 JavaScript 파일들 로드 -->
+    <script src="js/utils.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/tabs.js"></script>
+    <script src="js/dragdrop.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/media.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/text.js"></script>
+    <script src="js/template.js"></script>
+    <script src="js/init.js"></script>
+</body>
+</html>
