@@ -4,26 +4,6 @@
 let selectedElement = null;
 let elementCounter = 0;
 
-// 텍스트 요소 추가
-function addTextElement(content, x, y) {
-    const canvas = document.getElementById('canvas');
-    const element = document.createElement('div');
-    
-    element.className = 'canvas-element canvas-text';
-    element.textContent = content;
-    element.style.left = x + 'px';
-    element.style.top = y + 'px';
-    element.id = 'element-' + (++elementCounter);
-    element.style.zIndex = '10'; // 텍스트는 위쪽 레이어
-    
-    element.onclick = function() {
-        selectElement(this);
-    };
-    
-    canvas.appendChild(element);
-    selectElement(element);
-}
-
 // 이미지 요소 추가
 function addImageElement(src, x, y) {
     const canvas = document.getElementById('canvas');
@@ -114,9 +94,13 @@ function deleteSelectedElement() {
         selectedElement = null;
         
         // 편집기 초기화
-        document.getElementById('no-selection').style.display = 'block';
-        document.getElementById('text-editor').style.display = 'none';
-        document.getElementById('image-editor').style.display = 'none';
+        const noSelection = document.getElementById('no-selection');
+        const textEditor = document.getElementById('text-editor');
+        const imageEditor = document.getElementById('image-editor');
+        
+        if (noSelection) noSelection.style.display = 'block';
+        if (textEditor) textEditor.style.display = 'none';
+        if (imageEditor) imageEditor.style.display = 'none';
     }
 }
 
@@ -127,15 +111,6 @@ function changeBackground(background) {
     document.getElementById('canvas').style.background = background;
 }
 
-// 커스텀 텍스트 추가
-function addCustomText() {
-    const input = document.getElementById('custom-text');
-    if (input.value.trim()) {
-        addTextElement(input.value.trim(), 50, 50);
-        input.value = '';
-    }
-}
-
 // 캔버스 초기화 (모든 요소 제거)
 function clearCanvas() {
     if (confirm('캔버스의 모든 요소를 삭제하시겠습니까?')) {
@@ -144,9 +119,13 @@ function clearCanvas() {
         elements.forEach(element => element.remove());
         
         selectedElement = null;
-        document.getElementById('no-selection').style.display = 'block';
-        document.getElementById('text-editor').style.display = 'none';
-        document.getElementById('image-editor').style.display = 'none';
+        const noSelection = document.getElementById('no-selection');
+        const textEditor = document.getElementById('text-editor');
+        const imageEditor = document.getElementById('image-editor');
+        
+        if (noSelection) noSelection.style.display = 'block';
+        if (textEditor) textEditor.style.display = 'none';
+        if (imageEditor) imageEditor.style.display = 'none';
         
         // 배경도 초기화
         canvas.style.background = '#333';
