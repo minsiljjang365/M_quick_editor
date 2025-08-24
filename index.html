@@ -405,7 +405,6 @@
             <div class="nav-menu">
                 <a href="#" class="nav-link active">🏠 홈</a>
                 <a href="#" class="nav-link" onclick="showProjectsPage()">📁 프로젝트</a>
-                <a href="#" class="nav-link" onclick="showSettingsPage()">⚙️ 설정</a>
                 <a href="#" class="nav-link" onclick="showHelpPage()">❓ 도움말</a>
                 <a href="#" class="nav-link" onclick="showAdminLogin()">🔐 관리자</a>
             </div>
@@ -508,8 +507,11 @@
             query,
             orderBy
         } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-        
-
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
         
         // Firebase 설정
         const firebaseConfig = {
@@ -523,6 +525,7 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
         
         // 전역 변수
         let allProjects = [];
@@ -761,10 +764,6 @@
             document.querySelector('.projects-section').scrollIntoView({ behavior: 'smooth' });
         }
 
-        window.showSettingsPage = function() {
-            alert('설정 페이지 (구현 예정)');
-        }
-
         window.showHelpPage = function() {
             alert('도움말 페이지 (구현 예정)');
         }
@@ -788,16 +787,11 @@
             // 하드코딩된 관리자 계정
             if (adminId === 'admin' && adminPassword === 'admin123') {
                 hideAdminLoginModal();
-                showAdminPage();
+                window.location.href = 'admin.html';
             } else {
                 alert('관리자 계정 정보가 올바르지 않습니다.');
                 document.getElementById('admin-id').focus();
             }
-        }
-
-        window.showAdminPage = function() {
-            // 관리자 페이지로 이동
-            window.location.href = 'admin.html';
         }
 
         // Enter키 이벤트 - 관리자 로그인
