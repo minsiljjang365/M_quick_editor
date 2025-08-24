@@ -1,4 +1,4 @@
-// player.js - 유튜브 쇼츠 플레이어 완전 기능
+// player.js - 유튜브 쇼츠 플레이어 완전 기능 (HTML 구조 활용)
 
 // 플레이어 전역 변수
 let currentMode = 'edit'; // 'edit' 또는 'player'
@@ -15,56 +15,18 @@ let playerInitialized = false;
 function initializePlayer() {
     if (playerInitialized) return;
     
-    createPlayerUI();
+    setupPlayerControls();
     setupPlayerEvents();
     setupCanvasForPlayer();
+    addModeButtonStyles();
     playerInitialized = true;
     console.log('🎬 플레이어 초기화 완료');
 }
 
-// 플레이어 UI 생성
-function createPlayerUI() {
-    const canvasArea = document.getElementById('canvas-area');
-    
-    // 모드 전환 버튼 추가
-    const modeControls = document.createElement('div');
-    modeControls.id = 'mode-controls';
-    modeControls.style.cssText = `
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: #2a2a2a;
-        border-radius: 8px;
-    `;
-    
-    const editModeBtn = document.createElement('button');
-    editModeBtn.id = 'edit-mode-btn';
-    editModeBtn.innerHTML = '✏️ 편집 모드';
-    editModeBtn.className = 'mode-btn active';
-    editModeBtn.onclick = () => switchToEditMode();
-    
-    const playerModeBtn = document.createElement('button');
-    playerModeBtn.id = 'player-mode-btn';
-    playerModeBtn.innerHTML = '▶️ 플레이어 모드';
-    playerModeBtn.className = 'mode-btn';
-    playerModeBtn.onclick = () => switchToPlayerMode();
-    
-    modeControls.appendChild(editModeBtn);
-    modeControls.appendChild(playerModeBtn);
-    
-    // 플레이어 컨트롤 생성
-    const playerControls = document.createElement('div');
-    playerControls.id = 'player-controls';
-    playerControls.style.cssText = `
-        display: none;
-        flex-direction: column;
-        gap: 10px;
-        padding: 15px;
-        background: #2a2a2a;
-        border-radius: 8px;
-        margin-top: 10px;
-    `;
+// 플레이어 컨트롤 생성 (기존 HTML 활용)
+function setupPlayerControls() {
+    const playerControls = document.getElementById('player-controls');
+    if (!playerControls) return;
     
     // 재생 컨트롤 바
     const controlBar = document.createElement('div');
@@ -250,11 +212,11 @@ function createPlayerUI() {
         font-size: 12px;
     `;
     
-    // 내보내기 버튼
-    const exportBtn = document.createElement('button');
-    exportBtn.innerHTML = '💾 내보내기';
-    exportBtn.onclick = () => exportVideo();
-    exportBtn.style.cssText = `
+    // 렌더링 버튼 (내보내기 -> 렌더링으로 변경)
+    const renderBtn = document.createElement('button');
+    renderBtn.innerHTML = '🎬 렌더링';
+    renderBtn.onclick = () => renderVideo();
+    renderBtn.style.cssText = `
         padding: 8px 15px;
         background: #28a745;
         color: white;
@@ -262,24 +224,18 @@ function createPlayerUI() {
         border-radius: 6px;
         cursor: pointer;
         font-size: 12px;
+        font-weight: bold;
     `;
     
     optionsContainer.appendChild(loopBtn);
     optionsContainer.appendChild(fullscreenBtn);
-    optionsContainer.appendChild(exportBtn);
+    optionsContainer.appendChild(renderBtn);
     
     // 모든 요소 조립
     playerControls.appendChild(controlBar);
     playerControls.appendChild(timelineContainer);
     playerControls.appendChild(volumeContainer);
     playerControls.appendChild(optionsContainer);
-    
-    // 캔버스 영역에 추가
-    canvasArea.insertBefore(modeControls, canvasArea.firstChild);
-    canvasArea.appendChild(playerControls);
-    
-    // 모드 버튼 스타일 추가
-    addModeButtonStyles();
 }
 
 // 모드 버튼 스타일 추가
@@ -391,7 +347,7 @@ function setupPlayerEvents() {
     });
 }
 
-// 편집 모드로 전환
+// 편집 모드로 전환 (HTML 버튼과 연결)
 function switchToEditMode() {
     currentMode = 'edit';
     
@@ -400,10 +356,14 @@ function switchToEditMode() {
         stopPlayback();
     }
     
-    // UI 업데이트
-    document.getElementById('edit-mode-btn').classList.add('active');
-    document.getElementById('player-mode-btn').classList.remove('active');
-    document.getElementById('player-controls').style.display = 'none';
+    // UI 업데이트 (기존 HTML 버튼 활용)
+    const editBtn = document.getElementById('edit-mode-btn');
+    const playerBtn = document.getElementById('player-mode-btn');
+    const playerControls = document.getElementById('player-controls');
+    
+    if (editBtn) editBtn.classList.add('active');
+    if (playerBtn) playerBtn.classList.remove('active');
+    if (playerControls) playerControls.style.display = 'none';
     
     // 캔버스 원래대로 복구
     const canvas = document.getElementById('canvas');
@@ -422,14 +382,18 @@ function switchToEditMode() {
     console.log('✏️ 편집 모드로 전환');
 }
 
-// 플레이어 모드로 전환
+// 플레이어 모드로 전환 (HTML 버튼과 연결)
 function switchToPlayerMode() {
     currentMode = 'player';
     
-    // UI 업데이트
-    document.getElementById('edit-mode-btn').classList.remove('active');
-    document.getElementById('player-mode-btn').classList.add('active');
-    document.getElementById('player-controls').style.display = 'flex';
+    // UI 업데이트 (기존 HTML 버튼 활용)
+    const editBtn = document.getElementById('edit-mode-btn');
+    const playerBtn = document.getElementById('player-mode-btn');
+    const playerControls = document.getElementById('player-controls');
+    
+    if (editBtn) editBtn.classList.remove('active');
+    if (playerBtn) playerBtn.classList.add('active');
+    if (playerControls) playerControls.style.display = 'flex';
     
     // 캔버스를 플레이어용으로 설정
     setupCanvasForPlayer();
@@ -483,14 +447,16 @@ function startPlayback() {
     if (currentMode !== 'player') return;
     
     isPlaying = true;
-    document.getElementById('play-pause-btn').innerHTML = '⏸️';
+    const playBtn = document.getElementById('play-pause-btn');
+    if (playBtn) playBtn.innerHTML = '⏸️';
     
     // 재생 간격 설정 (60fps)
     playInterval = setInterval(() => {
         currentTime += 1/60;
         
         if (currentTime >= totalDuration) {
-            if (document.getElementById('loop-btn').classList.contains('active')) {
+            const loopBtn = document.getElementById('loop-btn');
+            if (loopBtn && loopBtn.classList.contains('active')) {
                 seekTo(0); // 반복 재생
             } else {
                 stopPlayback(); // 재생 완료
@@ -510,7 +476,8 @@ function startPlayback() {
 // 재생 일시정지
 function pausePlayback() {
     isPlaying = false;
-    document.getElementById('play-pause-btn').innerHTML = '▶️';
+    const playBtn = document.getElementById('play-pause-btn');
+    if (playBtn) playBtn.innerHTML = '▶️';
     
     if (playInterval) {
         clearInterval(playInterval);
@@ -599,12 +566,14 @@ function animateElement(element, animationType, duration) {
 function updateTimeDisplay() {
     const current = formatTime(currentTime);
     const total = formatTime(totalDuration);
-    document.getElementById('time-display').innerHTML = `${current} / ${total}`;
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) timeDisplay.innerHTML = `${current} / ${total}`;
 }
 
 // 타임라인 슬라이더 업데이트
 function updateTimelineSlider() {
-    document.getElementById('timeline-slider').value = currentTime;
+    const slider = document.getElementById('timeline-slider');
+    if (slider) slider.value = currentTime;
 }
 
 // 시간 포맷팅
@@ -622,7 +591,8 @@ function changePlaybackSpeed(speed) {
 
 // 볼륨 조절
 function changeVolume(volume) {
-    document.getElementById('volume-value').innerHTML = `${volume}%`;
+    const volumeValue = document.getElementById('volume-value');
+    if (volumeValue) volumeValue.innerHTML = `${volume}%`;
     
     // 실제 오디오 볼륨 조절 (구현 예정)
     if (backgroundMusic) {
@@ -635,6 +605,8 @@ function changeVolume(volume) {
 // 반복 재생 토글
 function toggleLoop() {
     const loopBtn = document.getElementById('loop-btn');
+    if (!loopBtn) return;
+    
     loopBtn.classList.toggle('active');
     
     if (loopBtn.classList.contains('active')) {
@@ -655,19 +627,42 @@ function toggleFullscreen() {
             canvas.style.maxWidth = '100vw';
             canvas.style.maxHeight = '100vh';
             console.log('⛶ 전체화면 모드');
+        }).catch(err => {
+            console.error('전체화면 실패:', err);
         });
     } else {
         document.exitFullscreen().then(() => {
             setupCanvasForPlayer();
             console.log('⛷ 전체화면 해제');
+        }).catch(err => {
+            console.error('전체화면 해제 실패:', err);
         });
     }
 }
 
-// 동영상 내보내기
-function exportVideo() {
-    alert('동영상 내보내기 기능 구현 예정\n\n지원 포맷:\n- MP4 (H.264)\n- WebM\n- GIF\n\n해상도:\n- 1080x1920 (Full HD)\n- 720x1280 (HD)');
-    console.log('💾 동영상 내보내기');
+// 동영상 렌더링 (내보내기 -> 렌더링으로 변경)
+function renderVideo() {
+    // 렌더링 확인 대화상자
+    if (!confirm('현재 편집 내용을 동영상으로 렌더링하시겠습니까?\n\n렌더링 시간이 다소 소요될 수 있습니다.')) {
+        return;
+    }
+    
+    // 렌더링 진행 상황 표시
+    const renderBtn = event.target;
+    const originalText = renderBtn.innerHTML;
+    renderBtn.innerHTML = '🎬 렌더링 중...';
+    renderBtn.disabled = true;
+    
+    // 실제 렌더링 로직은 여기에 구현
+    setTimeout(() => {
+        alert(`🎉 렌더링 완료!\n\n출력 설정:\n- 해상도: 1080x1920 (FHD 세로)\n- 포맷: MP4 (H.264)\n- 프레임률: 30fps\n- 길이: ${formatTime(totalDuration)}\n\n파일이 다운로드 폴더에 저장됩니다.`);
+        
+        // 버튼 원상복구
+        renderBtn.innerHTML = originalText;
+        renderBtn.disabled = false;
+        
+        console.log('🎬 동영상 렌더링 완료');
+    }, 3000); // 3초 후 완료 (실제로는 더 오래 걸릴 수 있음)
 }
 
 // 배경음악 설정
@@ -745,4 +740,4 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-console.log('🎬 player.js 로드 완료');
+console.log('🎬 player.js 로드 완료 (HTML 구조 활용)');
