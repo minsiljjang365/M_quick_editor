@@ -379,10 +379,10 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <h2>🔧 쇼츠 퀵에디터 - 관리자 패널</h2>
+                <h2>🔐 쇼츠 퀵에디터 - 관리자 패널</h2>
             </div>
             <div class="nav-actions" id="nav-actions">
-                <button class="nav-btn home-btn" onclick="requestLogout()">🏠 메인으로</button>
+                <a href="index.html" class="nav-btn home-btn">🏠 메인으로</a>
                 <button class="nav-btn logout-btn" onclick="logout()">🚪 로그아웃</button>
             </div>
         </div>
@@ -404,7 +404,7 @@
                 <input type="password" id="admin-password" placeholder="비밀번호">
             </div>
             <div class="login-actions">
-                <button class="login-btn login-secondary" onclick="window.location.href='index.html'">취소</button>
+                <button class="login-btn login-secondary" onclick="goHome()">취소</button>
                 <button class="login-btn login-primary" onclick="attemptLogin()">로그인</button>
             </div>
         </div>
@@ -445,7 +445,7 @@
                             <div id="claude-status" class="api-status api-error">❌ API 키가 등록되지 않았습니다</div>
                             <div class="form-group">
                                 <label for="claude-key">Claude API 키</label>
-                                <input type="password" id="claude-key" placeholder="sk-ant-..." oninput="trackChange('claude-key')">
+                                <input type="password" id="claude-key" placeholder="sk-ant-...">
                                 <small>Anthropic에서 발급받은 API 키를 입력하세요</small>
                             </div>
                             <div class="btn-group">
@@ -466,7 +466,7 @@
                             <div id="openai-status" class="api-status api-error">❌ API 키가 등록되지 않았습니다</div>
                             <div class="form-group">
                                 <label for="openai-key">OpenAI API 키</label>
-                                <input type="password" id="openai-key" placeholder="sk-..." oninput="trackChange('openai-key')">
+                                <input type="password" id="openai-key" placeholder="sk-...">
                                 <small>OpenAI에서 발급받은 API 키를 입력하세요</small>
                             </div>
                             <div class="btn-group">
@@ -476,6 +476,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 기타 API들... (생략) -->
                     
                 </div>
 
@@ -509,7 +511,7 @@
                     
                     <div class="form-group">
                         <label>관리자 비밀번호 변경</label>
-                        <input type="password" id="new-password" placeholder="새 비밀번호 (현재: admin123)" oninput="trackChange('new-password')">
+                        <input type="password" id="new-password" placeholder="새 비밀번호 (현재: admin123)">
                         <small>비밀번호는 8자 이상이어야 합니다</small>
                     </div>
                     <button class="btn btn-save" onclick="changePassword()" style="width: 100%;">🔐 비밀번호 변경</button>
@@ -549,81 +551,6 @@
         // 전역 변수
         let apiConfig = {};
         let sessionStartTime = Date.now();
-        let changeTracker = {}; // 변화 추적 객체
-        let autoSaveTimer = null;
-
-        // 변화 추적 시스템
-        function trackChange(fieldId) {
-            const currentValue = document.getElementById(fieldId).value;
-            const savedValue = getSavedValue(fieldId);
-            
-            if (currentValue !== savedValue) {
-                changeTracker[fieldId] = {
-                    changed: true,
-                    newValue: currentValue,
-                    timestamp: Date.now()
-                };
-            } else {
-                delete changeTracker[fieldId];
-            }
-        }
-
-        function getSavedValue(fieldId) {
-            const fieldMap = {
-                'claude-key': apiConfig.claude_key || '',
-                'openai-key': apiConfig.openai_key || '',
-                'new-password': ''
-            };
-            return fieldMap[fieldId] || '';
-        }
-
-        // 30초마다 변화 체크 및 저장
-        function startAutoSaveTimer() {
-            if (autoSaveTimer) clearInterval(autoSaveTimer);
-            
-            autoSaveTimer = setInterval(() => {
-                const hasChanges = Object.keys(changeTracker).length > 0;
-                
-                if (hasChanges) {
-                    console.log('🔄 변화 감지됨, 자동 저장 중...');
-                    autoSaveChanges();
-                } else {
-                    console.log('✅ 변화 없음, 저장 건너뛰기');
-                }
-            }, 30000); // 30초마다
-        }
-
-        async function autoSaveChanges() {
-            try {
-                const updates = {};
-                let hasApiChanges = false;
-
-                for (const [fieldId, change] of Object.entries(changeTracker)) {
-                    if (fieldId === 'claude-key') {
-                        updates.claude_key = change.newValue;
-                        hasApiChanges = true;
-                    } else if (fieldId === 'openai-key') {
-                        updates.openai_key = change.newValue;
-                        hasApiChanges = true;
-                    }
-                }
-
-                if (hasApiChanges) {
-                    updates.updated_at = new Date();
-                    const docRef = doc(db, "api_config", "main");
-                    await setDoc(docRef, updates, { merge: true });
-                    
-                    Object.assign(apiConfig, updates);
-                    console.log('✅ 자동 저장 완료');
-                }
-
-                changeTracker = {}; // 변화 추적 초기화
-                updateAllStatusDisplays();
-
-            } catch (error) {
-                console.error('❌ 자동 저장 실패:', error);
-            }
-        }
 
         // 페이지 로드 시 초기화
         window.addEventListener('load', async () => {
@@ -639,7 +566,6 @@
                 loadAPIConfig();
                 startSessionTimer();
                 loadProjectStats();
-                startAutoSaveTimer(); // 자동 저장 타이머 시작
             } else {
                 showLoginScreen();
             }
@@ -676,34 +602,34 @@
                 loadAPIConfig();
                 startSessionTimer();
                 loadProjectStats();
-                startAutoSaveTimer(); // 자동 저장 타이머 시작
             } else {
                 alert('❌ 관리자 계정 정보가 올바르지 않습니다.');
                 document.getElementById('admin-id').focus();
             }
         }
 
-        // 홈 버튼 클릭 시 로그아웃 요청
-        window.requestLogout = function() {
-            alert('🚨 먼저 로그아웃 버튼을 클릭해서 로그아웃해주세요!\n\n로그아웃 → 메인 이동 순서로 진행해야 합니다.');
-        }
-
         // 로그아웃
         window.logout = function() {
-            const confirmMessage = '로그아웃하고 메인 페이지로 이동하시겠습니까?';
-            
-            if (confirm(confirmMessage)) {
-                // 자동 저장 타이머 중지
-                if (autoSaveTimer) {
-                    clearInterval(autoSaveTimer);
-                    autoSaveTimer = null;
-                }
-
+            if (confirm('정말 로그아웃하시겠습니까?')) {
                 // 세션 스토리지에서 인증 상태 제거
                 sessionStorage.removeItem('admin_authenticated');
                 sessionStorage.removeItem('admin_login_time');
                 
                 alert('🚪 로그아웃되었습니다.');
+                showLoginScreen();
+                
+                // 입력 필드 초기화
+                document.getElementById('admin-id').value = '';
+                document.getElementById('admin-password').value = '';
+            }
+        }
+
+        // 홈으로 이동 (로그아웃 포함)
+        window.goHome = function() {
+            if (confirm('로그아웃하고 메인 페이지로 이동하시겠습니까?')) {
+                // 세션 완전 삭제
+                sessionStorage.removeItem('admin_authenticated');
+                sessionStorage.removeItem('admin_login_time');
                 
                 // 메인으로 이동
                 window.location.href = 'index.html';
@@ -885,10 +811,6 @@
                 updateStatusDisplay(apiName);
                 alert(`✅ ${apiName.toUpperCase()} API 키가 저장되었습니다!`);
                 
-                // 변화 추적에서 제거
-                const fieldId = `${apiName}-key`;
-                delete changeTracker[fieldId];
-                
             } catch (error) {
                 console.error('API 키 저장 실패:', error);
                 alert(`❌ 저장에 실패했습니다: ${error.message}`);
@@ -945,9 +867,6 @@
             alert('⚠️ 비밀번호 변경 기능은 보안상의 이유로 제한되어 있습니다.\n현재 비밀번호: admin123');
         }
 
-        // 변화 추적 함수 전역으로 노출
-        window.trackChange = trackChange;
-
         // Enter 키 이벤트
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -955,13 +874,6 @@
                 if (!loginScreen.classList.contains('hidden')) {
                     attemptLogin();
                 }
-            }
-        });
-
-        // 페이지 종료 시 자동 저장 타이머 정리
-        window.addEventListener('beforeunload', function() {
-            if (autoSaveTimer) {
-                clearInterval(autoSaveTimer);
             }
         });
     </script>

@@ -406,7 +406,7 @@
                 <a href="#" class="nav-link active">🏠 홈</a>
                 <a href="#" class="nav-link" onclick="showProjectsPage()">📁 프로젝트</a>
                 <a href="#" class="nav-link" onclick="showHelpPage()">❓ 도움말</a>
-                <a href="admin.html" class="nav-link">🔐 관리자</a>
+                <a href="#" class="nav-link" onclick="showAdminLogin()">🔐 관리자</a>
             </div>
         </div>
     </nav>
@@ -469,6 +469,28 @@
             <div class="modal-actions">
                 <button class="modal-btn cancel-btn" onclick="hideNewProjectModal()">취소</button>
                 <button class="modal-btn create-btn" onclick="createNewProject()">만들기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 관리자 로그인 모달 -->
+    <div id="admin-login-modal" class="new-project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 관리자 로그인</h2>
+                <p>관리자 계정으로 로그인하세요</p>
+            </div>
+            <div class="form-group">
+                <label for="admin-id">관리자 ID</label>
+                <input type="text" id="admin-id" placeholder="관리자 ID">
+            </div>
+            <div class="form-group">
+                <label for="admin-password">비밀번호</label>
+                <input type="password" id="admin-password" placeholder="비밀번호">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" onclick="hideAdminLoginModal()">취소</button>
+                <button class="modal-btn create-btn" onclick="adminLogin()">로그인</button>
             </div>
         </div>
     </div>
@@ -745,6 +767,50 @@
         window.showHelpPage = function() {
             alert('도움말 페이지 (구현 예정)');
         }
+
+        // 관리자 로그인 관련 함수들
+        window.showAdminLogin = function() {
+            document.getElementById('admin-login-modal').style.display = 'block';
+            document.getElementById('admin-id').focus();
+        }
+
+        window.hideAdminLoginModal = function() {
+            document.getElementById('admin-login-modal').style.display = 'none';
+            document.getElementById('admin-id').value = '';
+            document.getElementById('admin-password').value = '';
+        }
+
+        window.adminLogin = function() {
+            const adminId = document.getElementById('admin-id').value.trim();
+            const adminPassword = document.getElementById('admin-password').value;
+
+            // 하드코딩된 관리자 계정
+            if (adminId === 'admin' && adminPassword === 'admin123') {
+                hideAdminLoginModal();
+                window.location.href = 'admin.html';
+            } else {
+                alert('관리자 계정 정보가 올바르지 않습니다.');
+                document.getElementById('admin-id').focus();
+            }
+        }
+
+        // Enter키 이벤트 - 관리자 로그인
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const modal = document.getElementById('admin-login-modal');
+                if (modal.style.display === 'block') {
+                    adminLogin();
+                }
+            }
+        });
+
+        // 관리자 모달 외부 클릭시 닫기
+        document.addEventListener('click', function(e) {
+            const adminModal = document.getElementById('admin-login-modal');
+            if (e.target === adminModal) {
+                hideAdminLoginModal();
+            }
+        });
     </script>
 </body>
 </html>

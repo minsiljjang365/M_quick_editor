@@ -1,4 +1,3 @@
-// canvas.js - 캔버스 관리 및 요소 추가/선택 관련 함수들
 // canvas.js - 캔버스 관리 및 모든 편집 기능들 (완전판)
 
 // 전역 변수
@@ -9,7 +8,6 @@ let dragOffset = { x: 0, y: 0 };
 let canvasZoom = 1.0;
 let clipboard = null;
 
-// 이미지 요소 추가
 // ===========================================
 // 🎯 요소 추가 기능들
 // ===========================================
@@ -60,7 +58,7 @@ function addQuickShape(shapeType) {
 function addImageElement(src, x, y) {
     const canvas = document.getElementById('canvas');
     const element = document.createElement('img');
-
+    
     element.className = 'canvas-element canvas-image';
     element.src = src;
     element.style.left = x + 'px';
@@ -70,13 +68,12 @@ function addImageElement(src, x, y) {
     element.style.position = 'absolute';
     element.style.cursor = 'move';
     element.id = 'element-' + (++elementCounter);
-    element.style.zIndex = '5'; // 이미지는 중간 레이어
     element.style.zIndex = '5';
-
+    
     element.onclick = function() {
         selectElement(this);
     };
-
+    
     // 🔥 드래그 이벤트 추가 (핵심!)
     setupDragEvents(element);
     
@@ -84,17 +81,16 @@ function addImageElement(src, x, y) {
     selectElement(element);
 }
 
-// 템플릿을 배경으로 추가 (맨 아래 레이어)
 // 템플릿을 배경으로 추가 (기존 함수 유지)
 function addTemplateAsBackground(imageSrc, templateName) {
     const canvas = document.getElementById('canvas');
-
+    
     // 기존 배경 템플릿 제거
     const existingBg = canvas.querySelector('.canvas-background-template');
     if (existingBg) {
         existingBg.remove();
     }
-
+    
     const bgElement = document.createElement('img');
     bgElement.className = 'canvas-element canvas-background-template';
     bgElement.src = imageSrc;
@@ -103,27 +99,16 @@ function addTemplateAsBackground(imageSrc, templateName) {
     bgElement.style.width = '100%';
     bgElement.style.height = '100%';
     bgElement.style.objectFit = 'cover';
-    bgElement.style.zIndex = '1'; // 가장 아래 레이어
-    bgElement.style.pointerEvents = 'none'; // 클릭 이벤트 차단
     bgElement.style.zIndex = '1';
     bgElement.style.pointerEvents = 'none';
     bgElement.id = 'background-template';
     bgElement.alt = templateName;
-
-    // 캔버스의 맨 앞에 추가 (z-index로 아래 배치)
+    
     canvas.insertBefore(bgElement, canvas.firstChild);
-
+    
     console.log(`배경 템플릿 적용됨: ${templateName}`);
 }
 
-// 배경 템플릿 제거
-function removeBackgroundTemplate() {
-    const canvas = document.getElementById('canvas');
-    const bgTemplate = canvas.querySelector('.canvas-background-template');
-    if (bgTemplate) {
-        bgTemplate.remove();
-        console.log('배경 템플릿 제거됨');
-        return true;
 // ===========================================
 // 🖱️ 드래그 이동 기능 (핵심!)
 // ===========================================
@@ -208,10 +193,8 @@ function updateEditorPositionValues(element) {
         if (imageX) imageX.value = parseInt(element.style.left);
         if (imageY) imageY.value = parseInt(element.style.top);
     }
-    return false;
 }
 
-// 요소 선택
 // ===========================================
 // 🎯 요소 선택 및 관리
 // ===========================================
@@ -222,13 +205,13 @@ function selectElement(element) {
     if (element.classList.contains('canvas-background-template')) {
         return;
     }
-
+    
     // 이전 선택 해제
     if (selectedElement) {
         selectedElement.classList.remove('selected');
         selectedElement.style.outline = '';
     }
-
+    
     // 새 요소 선택
     selectedElement = element;
     element.classList.add('selected');
@@ -237,9 +220,8 @@ function selectElement(element) {
     // 선택된 도구들 표시
     const selectedTools = document.getElementById('selected-tools');
     if (selectedTools) selectedTools.style.display = 'block';
-
+    
     // PPT 편집기 업데이트
-    updatePPTEditor(element);
     if (typeof updatePPTEditor === 'function') {
         updatePPTEditor(element);
     }
@@ -257,19 +239,18 @@ function deselectAllElements() {
     if (selectedTools) selectedTools.style.display = 'none';
 }
 
-// 선택된 요소 삭제
 // 선택된 요소 삭제 (기존 함수 유지)
 function deleteSelectedElement() {
     if (selectedElement) {
         selectedElement.remove();
         selectedElement = null;
-
+        
         // 편집기 초기화
         const noSelection = document.getElementById('no-selection');
         const textEditor = document.getElementById('text-editor');
         const imageEditor = document.getElementById('image-editor');
         const selectedTools = document.getElementById('selected-tools');
-
+        
         if (noSelection) noSelection.style.display = 'block';
         if (textEditor) textEditor.style.display = 'none';
         if (imageEditor) imageEditor.style.display = 'none';
@@ -471,7 +452,6 @@ function zoomOut() {
     applyZoom();
 }
 
-// 배경 변경 (기존 함수 - 단색 배경용)
 function applyZoom() {
     const canvas = document.getElementById('canvas');
     const zoomLevel = document.getElementById('zoom-level');
@@ -490,7 +470,6 @@ function applyZoom() {
 
 // 배경 변경 (기존 함수 유지)
 function changeBackground(background) {
-    // 배경 템플릿이 있으면 제거
     removeBackgroundTemplate();
     document.getElementById('canvas').style.background = background;
     if (typeof saveCanvasState === 'function') saveCanvasState();
@@ -508,32 +487,30 @@ function removeBackgroundTemplate() {
     return false;
 }
 
-// 캔버스 초기화 (모든 요소 제거)
 // 캔버스 초기화 (기존 함수 유지)
 function clearCanvas() {
     if (confirm('캔버스의 모든 요소를 삭제하시겠습니까?')) {
         const canvas = document.getElementById('canvas');
         const elements = canvas.querySelectorAll('.canvas-element');
         elements.forEach(element => element.remove());
-
+        
         selectedElement = null;
         const noSelection = document.getElementById('no-selection');
         const textEditor = document.getElementById('text-editor');
         const imageEditor = document.getElementById('image-editor');
         const selectedTools = document.getElementById('selected-tools');
-
+        
         if (noSelection) noSelection.style.display = 'block';
         if (textEditor) textEditor.style.display = 'none';
         if (imageEditor) imageEditor.style.display = 'none';
         if (selectedTools) selectedTools.style.display = 'none';
-
+        
         // 배경도 초기화
         canvas.style.background = '#333';
-
+        
         if (typeof saveCanvasState === 'function') saveCanvasState();
         console.log('캔버스 초기화 완료');
     }
-}
 }
 
 // 캔버스 리셋 (줌 포함)
