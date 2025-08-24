@@ -195,6 +195,17 @@ function applyTemplateToCanvas(template) {
             addTemplateAsBackground(template.data, template.name);
             alert('✅ 템플릿이 캔버스에 적용되었습니다!');
             console.log('✅ 템플릿 적용 성공');
+            
+            // 🔥 템플릿 적용 후 자동저장 추가!
+            setTimeout(() => {
+                if (typeof saveCanvasState === 'function') {
+                    saveCanvasState();
+                    console.log('💾 템플릿 적용 후 캔버스 상태 저장됨');
+                } else {
+                    console.warn('⚠️ saveCanvasState 함수를 찾을 수 없음');
+                }
+            }, 100); // 0.1초 후 저장 (DOM 업데이트 완료 대기)
+            
         } catch (error) {
             console.error('❌ 템플릿 적용 오류:', error);
             alert('❌ 템플릿 적용 중 오류가 발생했습니다.');
