@@ -26,90 +26,7 @@
         
         <!-- PPT 편집기 -->
         <div id="ppt-editor">
-            <div id="ppt-header">🎨 요소 편집기</div>
-            <div id="ppt-content">
-                <div id="no-selection" style="text-align: center; color: #888; margin-top: 50px;">
-                    <p>편집할 요소를 선택하세요</p>
-                    <p style="font-size: 12px; margin-top: 10px;">캔버스의 텍스트나 이미지를<br>클릭하면 편집할 수 있습니다</p>
-                </div>
-                
-                <!-- 텍스트 편집 -->
-                <div id="text-editor" style="display: none;">
-                    <div class="ppt-section">
-                        <h4>텍스트 내용</h4>
-                        <div class="ppt-control">
-                            <textarea id="text-content" rows="3" placeholder="텍스트를 입력하세요"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <h4>글꼴 스타일</h4>
-                        <div class="ppt-control">
-                            <label>크기</label>
-                            <input type="range" id="text-size" min="12" max="48" value="16">
-                        </div>
-                        <div class="ppt-control">
-                            <label>색상</label>
-                            <input type="color" id="text-color" value="#ffffff">
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <h4>위치</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>X</label>
-                                <input type="number" id="text-x" min="0">
-                            </div>
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>Y</label>
-                                <input type="number" id="text-y" min="0">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <div class="ppt-control">
-                            <button onclick="deleteSelectedElement()">🗑️ 삭제</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 이미지 편집 -->
-                <div id="image-editor" style="display: none;">
-                    <div class="ppt-section">
-                        <h4>크기</h4>
-                        <div class="ppt-control">
-                            <label>너비</label>
-                            <input type="range" id="image-width" min="50" max="280" value="150">
-                        </div>
-                        <div class="ppt-control">
-                            <label>높이</label>
-                            <input type="range" id="image-height" min="50" max="450" value="150">
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <h4>위치</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>X</label>
-                                <input type="number" id="image-x" min="0">
-                            </div>
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>Y</label>
-                                <input type="number" id="image-y" min="0">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <div class="ppt-control">
-                            <button onclick="deleteSelectedElement()">🗑️ 삭제</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- templates/ppt-editor.html 내용이 여기에 로드됩니다 -->
         </div>
         
         <!-- 소스 패널 -->
@@ -292,7 +209,7 @@
         </div>
     </div>
     
-    <!-- 분리된 JavaScript 파일들 로드 -->
+    <!-- JavaScript 파일들 로드 -->
     <script src="js/utils.js"></script>
     <script src="js/canvas.js"></script>
     <script src="js/navigation.js"></script>
@@ -304,5 +221,15 @@
     <script src="js/text.js"></script>
     <script src="js/template.js"></script>
     <script src="js/init.js"></script>
+    
+    <script>
+        // PPT 편집기 템플릿 로드
+        fetch('templates/ppt-editor.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('ppt-editor').innerHTML = html;
+            })
+            .catch(error => console.error('PPT 편집기 로드 실패:', error));
+    </script>
 </body>
 </html>
