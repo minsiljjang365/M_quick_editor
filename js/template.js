@@ -186,7 +186,7 @@ function clearTemplatePreview() {
     }
 }
 
-// 캔버스에 템플릿 적용 (수정됨 - 에러 처리)
+// 🔥 캔버스에 템플릿 적용 (자동저장 기능 추가)
 function applyTemplateToCanvas(template) {
     console.log('🎨 캔버스에 템플릿 적용:', template.name);
     
