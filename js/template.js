@@ -1,17 +1,23 @@
-// template.js - 템플릿 처리 관련 함수들
+// template.js - 템플릿 처리 관련 함수들 (수정됨)
 
 const TEMPLATE_STORAGE_KEY = 'user_templates';
 
-// 템플릿 업로드
+// 템플릿 업로드 (수정됨 - 에러 처리 강화)
 function uploadTemplate(input) {
+    console.log('🔄 uploadTemplate 호출됨');
+    
     const file = input.files[0];
     if (!file || !file.type.startsWith('image/')) {
         alert('이미지 파일만 업로드할 수 있습니다.');
         return;
     }
 
+    console.log('📁 파일 선택됨:', file.name);
+    
     const reader = new FileReader();
     reader.onload = function(e) {
+        console.log('📷 파일 읽기 완료');
+        
         const templateData = {
             id: Date.now().toString(),
             name: file.name.split('.')[0],
@@ -19,33 +25,79 @@ function uploadTemplate(input) {
             uploadDate: new Date().toISOString()
         };
 
-        saveTemplateToStorage(templateData);
-        updateTemplateList();
-        alert('✅ 템플릿이 업로드되었습니다: ' + file.name);
+        console.log('💾 템플릿 데이터 생성:', templateData.name);
+        
+        // 저장 시도
+        const saved = saveTemplateToStorage(templateData);
+        if (saved) {
+            updateTemplateList();
+            alert('✅ 템플릿이 업로드되었습니다: ' + file.name);
+            console.log('✅ 템플릿 업로드 성공');
+        } else {
+            alert('❌ 템플릿 저장에 실패했습니다.');
+            console.log('❌ 템플릿 저장 실패');
+        }
         
         // 입력 필드 초기화
         input.value = '';
     };
+    
+    reader.onerror = function() {
+        alert('파일 읽기에 실패했습니다.');
+        console.log('❌ 파일 읽기 실패');
+    };
+    
     reader.readAsDataURL(file);
 }
 
-// localStorage에 템플릿 저장
+// localStorage에 템플릿 저장 (수정됨 - 에러 처리)
 function saveTemplateToStorage(templateData) {
-    let templates = getStoredTemplates();
-    templates.push(templateData);
-    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(templates));
+    try {
+        console.log('💾 localStorage 저장 시도');
+        let templates = getStoredTemplates();
+        templates.push(templateData);
+        localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(templates));
+        
+        // 저장 확인
+        const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+        if (saved) {
+            console.log('✅ localStorage 저장 성공');
+            return true;
+        } else {
+            console.log('❌ localStorage 저장 실패');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ 저장 오류:', error);
+        return false;
+    }
 }
 
-// localStorage에서 템플릿 목록 가져오기
+// localStorage에서 템플릿 목록 가져오기 (수정됨)
 function getStoredTemplates() {
-    const stored = localStorage.getItem(TEMPLATE_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+        const templates = stored ? JSON.parse(stored) : [];
+        console.log('📂 저장된 템플릿 수:', templates.length);
+        return templates;
+    } catch (error) {
+        console.error('❌ 템플릿 로딩 오류:', error);
+        return [];
+    }
 }
 
-// 템플릿 목록 업데이트
+// 템플릿 목록 업데이트 (수정됨 - 안전한 DOM 접근)
 function updateTemplateList() {
+    console.log('🔄 updateTemplateList 호출됨');
+    
     const select = document.getElementById('my-templates');
+    if (!select) {
+        console.log('⚠️ my-templates 요소를 찾을 수 없습니다');
+        return false;
+    }
+    
     const templates = getStoredTemplates();
+    console.log('📋 템플릿 목록 업데이트:', templates.length + '개');
     
     // 기존 옵션 제거 (첫 번째 옵션 제외)
     while (select.children.length > 1) {
@@ -59,12 +111,17 @@ function updateTemplateList() {
         option.textContent = `${template.name} (${new Date(template.uploadDate).toLocaleDateString()})`;
         select.appendChild(option);
     });
+    
+    console.log('✅ 템플릿 목록 업데이트 완료');
+    return true;
 }
 
-// 템플릿 선택 시 미리보기
+// 템플릿 선택 시 미리보기 (수정됨)
 function loadMyTemplate() {
+    console.log('🔄 loadMyTemplate 호출됨');
+    
     const select = document.getElementById('my-templates');
-    const selectedId = select.value;
+    const selectedId = select ? select.value : '';
     
     if (!selectedId) {
         clearTemplatePreview();
@@ -75,14 +132,20 @@ function loadMyTemplate() {
     const template = templates.find(t => t.id === selectedId);
     
     if (template) {
+        console.log('🖼️ 템플릿 미리보기:', template.name);
         showTemplatePreview(template);
+    } else {
+        console.log('❌ 선택된 템플릿을 찾을 수 없음:', selectedId);
     }
 }
 
-// 템플릿 미리보기 표시
+// 템플릿 미리보기 표시 (수정됨)
 function showTemplatePreview(template) {
     const preview = document.getElementById('template-preview');
-    if (!preview) return;
+    if (!preview) {
+        console.log('❌ template-preview 요소를 찾을 수 없습니다');
+        return;
+    }
     
     preview.innerHTML = `
         <img src="${template.data}" 
@@ -110,6 +173,8 @@ function showTemplatePreview(template) {
     
     preview.style.position = 'relative';
     preview.appendChild(applyButton);
+    
+    console.log('✅ 템플릿 미리보기 표시 완료');
 }
 
 // 미리보기 초기화
@@ -121,22 +186,34 @@ function clearTemplatePreview() {
     }
 }
 
-// 캔버스에 템플릿 적용
+// 캔버스에 템플릿 적용 (수정됨 - 에러 처리)
 function applyTemplateToCanvas(template) {
+    console.log('🎨 캔버스에 템플릿 적용:', template.name);
+    
     if (typeof addTemplateAsBackground === 'function') {
-        addTemplateAsBackground(template.data, template.name);
-        alert('✅ 템플릿이 캔버스에 적용되었습니다!');
+        try {
+            addTemplateAsBackground(template.data, template.name);
+            alert('✅ 템플릿이 캔버스에 적용되었습니다!');
+            console.log('✅ 템플릿 적용 성공');
+        } catch (error) {
+            console.error('❌ 템플릿 적용 오류:', error);
+            alert('❌ 템플릿 적용 중 오류가 발생했습니다.');
+        }
     } else {
-        console.error('addTemplateAsBackground 함수가 없습니다. canvas.js를 확인하세요.');
+        console.error('❌ addTemplateAsBackground 함수가 없습니다');
         alert('❌ 캔버스 함수가 준비되지 않았습니다.');
     }
 }
 
-// 선택된 템플릿 삭제
+// 선택된 템플릿 삭제 (수정됨)
 function deleteSelectedTemplate() {
     const select = document.getElementById('my-templates');
-    const selectedId = select.value;
+    if (!select) {
+        alert('템플릿 목록을 찾을 수 없습니다.');
+        return;
+    }
     
+    const selectedId = select.value;
     if (!selectedId) {
         alert('삭제할 템플릿을 선택하세요.');
         return;
@@ -146,16 +223,22 @@ function deleteSelectedTemplate() {
     const template = templates.find(t => t.id === selectedId);
     
     if (template && confirm(`"${template.name}" 템플릿을 삭제하시겠습니까?`)) {
-        const filteredTemplates = templates.filter(t => t.id !== selectedId);
-        localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(filteredTemplates));
-        
-        updateTemplateList();
-        clearTemplatePreview();
-        alert('✅ 템플릿이 삭제되었습니다.');
+        try {
+            const filteredTemplates = templates.filter(t => t.id !== selectedId);
+            localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(filteredTemplates));
+            
+            updateTemplateList();
+            clearTemplatePreview();
+            alert('✅ 템플릿이 삭제되었습니다.');
+            console.log('✅ 템플릿 삭제 완료');
+        } catch (error) {
+            console.error('❌ 템플릿 삭제 오류:', error);
+            alert('❌ 템플릿 삭제 중 오류가 발생했습니다.');
+        }
     }
 }
 
-// 전체 템플릿 삭제
+// 전체 템플릿 삭제 (수정됨)
 function clearAllTemplates() {
     const templates = getStoredTemplates();
     
@@ -165,19 +248,40 @@ function clearAllTemplates() {
     }
 
     if (confirm(`모든 템플릿 (${templates.length}개)을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
-        localStorage.removeItem(TEMPLATE_STORAGE_KEY);
-        updateTemplateList();
-        clearTemplatePreview();
-        alert('✅ 모든 템플릿이 삭제되었습니다.');
+        try {
+            localStorage.removeItem(TEMPLATE_STORAGE_KEY);
+            updateTemplateList();
+            clearTemplatePreview();
+            alert('✅ 모든 템플릿이 삭제되었습니다.');
+            console.log('✅ 전체 템플릿 삭제 완료');
+        } catch (error) {
+            console.error('❌ 전체 템플릿 삭제 오류:', error);
+            alert('❌ 템플릿 삭제 중 오류가 발생했습니다.');
+        }
     }
 }
 
-// 페이지 로드 시 템플릿 목록 초기화
+// 페이지 로드 시 템플릿 목록 초기화 (수정됨 - 강화된 타이밍)
 document.addEventListener('DOMContentLoaded', function() {
-    // 템플릿 목록 업데이트는 템플릿 패널이 로드된 후에 실행
-    setTimeout(() => {
-        if (document.getElementById('my-templates')) {
-            updateTemplateList();
-        }
-    }, 1000);
+    console.log('🔄 DOM 로드됨. 템플릿 초기화 시작...');
+    
+    // 여러 번 시도하는 함수
+    function tryInitializeTemplates(attempt = 1) {
+        const maxAttempts = 5;
+        
+        setTimeout(() => {
+            const templateSelect = document.getElementById('my-templates');
+            if (templateSelect) {
+                console.log(`✅ 템플릿 초기화 성공 (시도 ${attempt}회)`);
+                updateTemplateList();
+            } else if (attempt < maxAttempts) {
+                console.log(`⚠️ 템플릿 요소 없음. 다시 시도... (${attempt}/${maxAttempts})`);
+                tryInitializeTemplates(attempt + 1);
+            } else {
+                console.log('❌ 템플릿 초기화 최종 실패');
+            }
+        }, attempt * 500); // 0.5초씩 늘려가며 시도
+    }
+    
+    tryInitializeTemplates();
 });
