@@ -82,68 +82,7 @@
                     </div>
                 </div>
 
-                <!-- 텍스트 편집 (선택시 표시) -->
-                <div id="text-editor" style="display: none;">
-                    <div class="ppt-section">
-                        <h4>📝 텍스트 편집</h4>
-                        <div class="ppt-control">
-                            <textarea id="text-content" rows="3" placeholder="텍스트를 입력하세요" style="width: 100%; padding: 8px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white; font-size: 12px; resize: vertical;"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <h4>글꼴 스타일</h4>
-                        <div class="ppt-control">
-                            <label>크기</label>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="text-size" min="12" max="72" value="16" style="flex: 1;">
-                                <span id="text-size-value" style="min-width: 40px; color: #ccc;">16px</span>
-                            </div>
-                        </div>
-                        <div class="ppt-control">
-                            <label>색상</label>
-                            <input type="color" id="text-color" value="#ffffff" style="width: 100%; height: 35px;">
-                        </div>
-                        <div class="ppt-control">
-                            <label>글꼴</label>
-                            <select id="text-font" style="width: 100%; padding: 8px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
-                                <option value="Arial">Arial</option>
-                                <option value="맑은 고딕">맑은 고딕</option>
-                                <option value="나눔고딕">나눔고딕</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                                <option value="Courier New">Courier New</option>
-                            </select>
-                        </div>
-                        <div class="button-group">
-                            <button id="bold-btn" onclick="toggleTextBold()">🔤 굵게</button>
-                            <button id="italic-btn" onclick="toggleTextItalic()">🔖 기울임</button>
-                            <button id="underline-btn" onclick="toggleTextUnderline()">🔒 밑줄</button>
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <h4>텍스트 정렬</h4>
-                        <div class="button-group">
-                            <button onclick="setTextAlign('left')">⬅️ 왼쪽</button>
-                            <button onclick="setTextAlign('center')">↔️ 가운데</button>
-                            <button onclick="setTextAlign('right')">➡️ 오른쪽</button>
-                        </div>
-                    </div>
-                    
-                    <div class="ppt-section">
-                        <h4>위치 조정</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>X</label>
-                                <input type="number" id="text-x" min="0" max="300" style="width: 100%; padding: 6px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
-                            </div>
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>Y</label>
-                                <input type="number" id="text-y" min="0" max="500" style="width: 100%; padding: 6px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- 텍스트 편집기는 text-editor.html에서 로드됨 -->
                 
                 <!-- 이미지 편집 (선택시 표시) -->
                 <div id="image-editor" style="display: none;">
@@ -316,12 +255,6 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">✏️ 커스텀 텍스트</div>
-                        <input type="text" placeholder="텍스트 입력" id="custom-text" style="width: 100%; margin-top: 5px;">
-                        <button onclick="addCustomText()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">추가</button>
-                    </div>
-                    
-                    <div class="source-item">
                         <div class="source-item-title">📜 대본 작성</div>
                         <div class="source-item-desc">동영상 대본</div>
                         <div class="button-group">
@@ -349,13 +282,13 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">📤 음성파일 업로드</div>
+                        <div class="source-item-title">🔤 음성파일 업로드</div>
                         <div class="source-item-desc">나레이션, 대사 등</div>
                         <input type="file" accept="audio/*" onchange="uploadAudio(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">📊 보유 효과음</div>
+                        <div class="source-item-title">🔊 보유 효과음</div>
                         <div class="source-item-desc">업로드한 효과음 선택</div>
                         <select id="owned-sfx" onchange="selectOwnedSFX()" style="width: 100%; margin-top: 5px;">
                             <option value="">효과음 선택</option>
@@ -410,8 +343,19 @@
             .then(response => response.text())
             .then(html => {
                 document.getElementById('ppt-editor').innerHTML = html;
+                
+                // 텍스트 편집기 로드
+                return fetch('templates/text-editor.html');
             })
-            .catch(error => console.error('PPT 편집기 로드 실패:', error));
+            .then(response => response.text())
+            .then(html => {
+                const pptContent = document.getElementById('ppt-content');
+                if (pptContent) {
+                    // 텍스트 편집기를 PPT 편집기 내부에 추가
+                    pptContent.insertAdjacentHTML('beforeend', html);
+                }
+            })
+            .catch(error => console.error('텍스트 편집기 로드 실패:', error));
 
         // 템플릿 패널 로드
         fetch('templates/template-panel.html')
