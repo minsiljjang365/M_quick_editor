@@ -15,14 +15,26 @@
         <div id="project-title">프로젝트: 테스트 프로젝트</div>
     </div>
     
-    <!-- 메인 편집 영역 -->
-    <div id="main-editor">
-        <!-- 캔버스 영역 -->
-        <div id="canvas-area">
-            <div id="canvas" ondrop="dropOnCanvas(event)" ondragover="allowDrop(event)">
-                <!-- 편집 요소들이 여기에 추가됨 -->
-            </div>
+<!-- 메인 편집 영역 -->
+<div id="main-editor">
+    <!-- 캔버스 영역 -->
+    <div id="canvas-area">
+        <!-- 모드 전환 버튼 (캔버스 위쪽) -->
+        <div id="mode-controls" style="display: flex; gap: 10px; margin-bottom: 10px; padding: 10px; background: #2a2a2a; border-radius: 8px;">
+            <button id="edit-mode-btn" class="mode-btn active" onclick="switchToEditMode()">✏️ 편집 모드</button>
+            <button id="player-mode-btn" class="mode-btn" onclick="switchToPlayerMode()">▶️ 플레이어 모드</button>
         </div>
+        
+        <!-- 캔버스 (가운데) -->
+        <div id="canvas" ondrop="dropOnCanvas(event)" ondragover="allowDrop(event)">
+            <!-- 편집 요소들이 여기에 추가됨 -->
+        </div>
+        
+        <!-- 플레이어 컨트롤 (캔버스 아래쪽) -->
+        <div id="player-controls" style="display: none; margin-top: 10px; padding: 15px; background: #2a2a2a; border-radius: 8px; flex-direction: column; gap: 10px;">
+            <!-- 재생/정지/타임라인 버튼들이 JavaScript에서 여기에 추가됨 -->
+        </div>
+    </div>
         
         <!-- PPT 편집기 -->
         <div id="ppt-editor">
@@ -368,4 +380,5 @@
     </script>
 </body>
 </html>
+
 
