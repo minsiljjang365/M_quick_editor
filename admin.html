@@ -624,9 +624,16 @@
             }
         }
 
-        // 홈으로 이동
+        // 홈으로 이동 (로그아웃 포함)
         window.goHome = function() {
-            window.location.href = 'index.html';
+            if (confirm('로그아웃하고 메인 페이지로 이동하시겠습니까?')) {
+                // 세션 완전 삭제
+                sessionStorage.removeItem('admin_authenticated');
+                sessionStorage.removeItem('admin_login_time');
+                
+                // 메인으로 이동
+                window.location.href = 'index.html';
+            }
         }
 
         // 세션 타이머
