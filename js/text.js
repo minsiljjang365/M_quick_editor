@@ -2,6 +2,7 @@
 
 // 전역 변수
 let currentTextElement = null;
+let canvasStateRestored = false; // 🔥 중복 복원 방지 플래그 추가
 
 // 프롬프트 저장 관련 상수
 const PROMPT_STORAGE_KEY = 'ai_prompts_history';
@@ -420,10 +421,10 @@ function savePrompt(promptText, type) {
         if (existing) {
             existing.usage++;
             existing.timestamp = new Date().toISOString();
-            console.log('📝 기존 프롬프트 사용횟수 증가:', existing.usage);
+            console.log('🔄 기존 프롬프트 사용횟수 증가:', existing.usage);
         } else {
             prompts.push(promptData);
-            console.log('📝 새 프롬프트 추가됨');
+            console.log('🔄 새 프롬프트 추가됨');
         }
         
         // 최근 100개만 유지
@@ -590,7 +591,7 @@ function generateFromKeyword(type) {
         return;
     }
     
-    let templateMessage = `📝 ${typeText} 프롬프트 템플릿 선택:\n\n`;
+    let templateMessage = `🔍 ${typeText} 프롬프트 템플릿 선택:\n\n`;
     templates.forEach((template, i) => {
         const preview = template.text.substring(0, 60) + '...';
         templateMessage += `${i+1}. ${preview}\n`;
@@ -620,7 +621,7 @@ function generateFromWebURL(type) {
         return;
     }
     
-    let templateMessage = `📝 ${typeText} 프롬프트 템플릿 선택:\n\n`;
+    let templateMessage = `🔍 ${typeText} 프롬프트 템플릿 선택:\n\n`;
     templates.forEach((template, i) => {
         const preview = template.text.substring(0, 60) + '...';
         templateMessage += `${i+1}. ${preview}\n`;
@@ -794,14 +795,20 @@ function saveCanvasState() {
     }
 }
 
-// 캔버스 상태 복원
+// 🔥 캔버스 상태 복원 (중복 방지 추가)
 function loadCanvasState() {
+    // 중복 복원 방지
+    if (canvasStateRestored) {
+        console.log('🚫 이미 복원됨, 중복 방지');
+        return false;
+    }
+    
     try {
         console.log('🔄 캔버스 상태 복원 시도');
         
         const stored = localStorage.getItem(CANVAS_STATE_KEY);
         if (!stored) {
-            console.log('📭 저장된 캔버스 상태 없음');
+            console.log('🔍 저장된 캔버스 상태 없음');
             return false;
         }
         
@@ -822,6 +829,8 @@ function loadCanvasState() {
             restoreElement(elementData);
         });
         
+        // 복원 완료 플래그 설정
+        canvasStateRestored = true;
         console.log('✅ 캔버스 상태 복원 완료:', canvasState.elements.length + '개 요소');
         return true;
         
@@ -930,14 +939,25 @@ function restoreElement(elementData) {
 }
 
 // ========================================
-// 초기화
+// 🔥 초기화 (중복 방지 로직 추가)
 // ========================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 🔥 페이지 로드 시 캔버스 상태 자동 복원
+    // 🔥 중복 복원 방지
+    if (canvasStateRestored) {
+        console.log('🚫 캔버스 상태 이미 복원됨, 중복 방지');
+        return;
+    }
+    
+    // 페이지 로드 시 캔버스 상태 자동 복원
     setTimeout(() => {
-        console.log('🔄 페이지 로드 완료 - 캔버스 상태 복원 시도');
-        loadCanvasState();
+        if (!canvasStateRestored) {
+            console.log('🔄 페이지 로드 완료 - 캔버스 상태 복원 시도');
+            const restored = loadCanvasState();
+            if (restored) {
+                canvasStateRestored = true;
+            }
+        }
     }, 500);
     
     // 클릭 이벤트 설정
