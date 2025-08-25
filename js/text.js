@@ -2,7 +2,6 @@
 
 // 전역 변수
 let currentTextElement = null;
-let canvasStateRestored = false; // 🔥 중복 복원 방지 플래그 추가
 
 // 프롬프트 저장 관련 상수
 const PROMPT_STORAGE_KEY = 'ai_prompts_history';
@@ -115,8 +114,10 @@ function setupTextEditorEvents(element) {
     if (textContent) {
         textContent.oninput = function() {
             element.textContent = this.value;
-            // 🔥 실시간 저장 추가!
-            saveCanvasState();
+            // 텍스트 변경 시 저장 (별도 함수에서 처리)
+            if (typeof saveProjectState === 'function') {
+                saveProjectState();
+            }
         };
     }
     
@@ -124,40 +125,50 @@ function setupTextEditorEvents(element) {
         textSize.oninput = function() {
             element.style.fontSize = this.value + 'px';
             if (textSizeValue) textSizeValue.textContent = this.value + 'px';
-            // 🔥 실시간 저장 추가!
-            saveCanvasState();
+            // 텍스트 변경 시 저장 (별도 함수에서 처리)
+            if (typeof saveProjectState === 'function') {
+                saveProjectState();
+            }
         };
     }
     
     if (textColor) {
         textColor.onchange = function() {
             element.style.color = this.value;
-            // 🔥 실시간 저장 추가!
-            saveCanvasState();
+            // 텍스트 변경 시 저장 (별도 함수에서 처리)
+            if (typeof saveProjectState === 'function') {
+                saveProjectState();
+            }
         };
     }
     
     if (textX) {
         textX.onchange = function() {
             element.style.left = this.value + 'px';
-            // 🔥 실시간 저장 추가!
-            saveCanvasState();
+            // 텍스트 변경 시 저장 (별도 함수에서 처리)
+            if (typeof saveProjectState === 'function') {
+                saveProjectState();
+            }
         };
     }
     
     if (textY) {
         textY.onchange = function() {
             element.style.top = this.value + 'px';
-            // 🔥 실시간 저장 추가!
-            saveCanvasState();
+            // 텍스트 변경 시 저장 (별도 함수에서 처리)
+            if (typeof saveProjectState === 'function') {
+                saveProjectState();
+            }
         };
     }
     
     if (textFont) {
         textFont.onchange = function() {
             element.style.fontFamily = this.value;
-            // 🔥 실시간 저장 추가!
-            saveCanvasState();
+            // 텍스트 변경 시 저장 (별도 함수에서 처리)
+            if (typeof saveProjectState === 'function') {
+                saveProjectState();
+            }
         };
     }
 }
@@ -753,213 +764,10 @@ function rgbToHex(rgb) {
 }
 
 // ========================================
-// 🔥 캔버스 상태 저장/복원 기능
-// ========================================
-
-const CANVAS_STATE_KEY = 'canvas_state';
-
-// 캔버스 상태 저장
-function saveCanvasState() {
-    try {
-        console.log('💾 캔버스 상태 저장 시도');
-        
-        const canvas = document.getElementById('canvas');
-        if (!canvas) return false;
-        
-        const canvasState = {
-            elements: [],
-            background: canvas.style.background || '#333',
-            lastSaved: new Date().toISOString()
-        };
-        
-        // 모든 캔버스 요소 수집
-        canvas.querySelectorAll('.canvas-element').forEach(element => {
-            const elementData = {
-                id: element.id,
-                className: element.className,
-                type: getElementType(element),
-                content: getElementContent(element),
-                styles: getElementStyles(element),
-                attributes: getElementAttributes(element)
-            };
-            canvasState.elements.push(elementData);
-        });
-        
-        localStorage.setItem(CANVAS_STATE_KEY, JSON.stringify(canvasState));
-        console.log('✅ 캔버스 상태 저장 완료:', canvasState.elements.length + '개 요소');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ 캔버스 저장 오류:', error);
-        return false;
-    }
-}
-
-// 🔥 캔버스 상태 복원 (중복 방지 추가)
-function loadCanvasState() {
-    // 중복 복원 방지
-    if (canvasStateRestored) {
-        console.log('🚫 이미 복원됨, 중복 방지');
-        return false;
-    }
-    
-    try {
-        console.log('🔄 캔버스 상태 복원 시도');
-        
-        const stored = localStorage.getItem(CANVAS_STATE_KEY);
-        if (!stored) {
-            console.log('🔍 저장된 캔버스 상태 없음');
-            return false;
-        }
-        
-        const canvasState = JSON.parse(stored);
-        const canvas = document.getElementById('canvas');
-        if (!canvas) return false;
-        
-        // 기존 요소들 제거
-        canvas.querySelectorAll('.canvas-element').forEach(element => {
-            element.remove();
-        });
-        
-        // 배경 복원
-        canvas.style.background = canvasState.background;
-        
-        // 요소들 복원
-        canvasState.elements.forEach(elementData => {
-            restoreElement(elementData);
-        });
-        
-        // 복원 완료 플래그 설정
-        canvasStateRestored = true;
-        console.log('✅ 캔버스 상태 복원 완료:', canvasState.elements.length + '개 요소');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ 캔버스 복원 오류:', error);
-        return false;
-    }
-}
-
-// 요소 타입 확인
-function getElementType(element) {
-    if (element.classList.contains('canvas-text')) return 'text';
-    if (element.classList.contains('canvas-image')) return 'image';
-    if (element.classList.contains('canvas-background-template')) return 'background-template';
-    return 'unknown';
-}
-
-// 요소 내용 가져오기
-function getElementContent(element) {
-    const type = getElementType(element);
-    if (type === 'text') return element.textContent;
-    if (type === 'image' || type === 'background-template') return element.src;
-    return '';
-}
-
-// 요소 스타일 가져오기
-function getElementStyles(element) {
-    return {
-        left: element.style.left,
-        top: element.style.top,
-        fontSize: element.style.fontSize,
-        color: element.style.color,
-        fontFamily: element.style.fontFamily,
-        fontWeight: element.style.fontWeight,
-        fontStyle: element.style.fontStyle,
-        textDecoration: element.style.textDecoration,
-        textAlign: element.style.textAlign,
-        width: element.style.width,
-        height: element.style.height,
-        zIndex: element.style.zIndex,
-        backgroundColor: element.style.backgroundColor,
-        border: element.style.border,
-        padding: element.style.padding,
-        objectFit: element.style.objectFit,
-        pointerEvents: element.style.pointerEvents
-    };
-}
-
-// 요소 속성 가져오기
-function getElementAttributes(element) {
-    const attributes = {};
-    if (element.getAttribute('data-text-type')) {
-        attributes['data-text-type'] = element.getAttribute('data-text-type');
-    }
-    if (element.alt) attributes.alt = element.alt;
-    return attributes;
-}
-
-// 요소 복원
-function restoreElement(elementData) {
-    const canvas = document.getElementById('canvas');
-    const type = elementData.type;
-    let element;
-    
-    if (type === 'text') {
-        element = document.createElement('div');
-        element.textContent = elementData.content;
-        element.onclick = function() {
-            selectTextElement(this);
-        };
-    } else if (type === 'image') {
-        element = document.createElement('img');
-        element.src = elementData.content;
-        element.onclick = function() {
-            selectElement(this);
-        };
-    } else if (type === 'background-template') {
-        element = document.createElement('img');
-        element.src = elementData.content;
-    } else {
-        return;
-    }
-    
-    // 기본 속성 설정
-    element.id = elementData.id;
-    element.className = elementData.className;
-    
-    // 스타일 적용
-    Object.keys(elementData.styles).forEach(styleName => {
-        if (elementData.styles[styleName]) {
-            element.style[styleName] = elementData.styles[styleName];
-        }
-    });
-    
-    // 속성 적용
-    Object.keys(elementData.attributes).forEach(attrName => {
-        element.setAttribute(attrName, elementData.attributes[attrName]);
-    });
-    
-    // 배경 템플릿은 맨 앞에, 나머지는 맨 뒤에
-    if (type === 'background-template') {
-        canvas.insertBefore(element, canvas.firstChild);
-    } else {
-        canvas.appendChild(element);
-    }
-}
-
-// ========================================
-// 🔥 초기화 (중복 방지 로직 추가)
+// 초기화
 // ========================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 🔥 중복 복원 방지
-    if (canvasStateRestored) {
-        console.log('🚫 캔버스 상태 이미 복원됨, 중복 방지');
-        return;
-    }
-    
-    // 페이지 로드 시 캔버스 상태 자동 복원
-    setTimeout(() => {
-        if (!canvasStateRestored) {
-            console.log('🔄 페이지 로드 완료 - 캔버스 상태 복원 시도');
-            const restored = loadCanvasState();
-            if (restored) {
-                canvasStateRestored = true;
-            }
-        }
-    }, 500);
-    
     // 클릭 이벤트 설정
     setTimeout(() => {
         document.addEventListener('click', function(e) {
