@@ -701,7 +701,16 @@ function restoreElement(elementData) {
     } else if (type === 'background-template') {
         element = document.createElement('img');
         element.src = elementData.content;
-        // 배경 템플릿은 항상 100% 크기로 강제 설정 (미리보기와 동일)
+        // 배경 템플릿 크기를 먼저 설정
+        element.style.left = '0px';
+        element.style.top = '0px';
+        element.style.width = '100%';
+        element.style.height = '100%';
+        element.style.objectFit = 'cover';
+        element.style.zIndex = '3';
+        element.style.pointerEvents = 'none';
+        
+        // onload에서도 한번 더 강제 설정
         element.onload = function() {
             this.style.width = '100%';
             this.style.height = '100%';
