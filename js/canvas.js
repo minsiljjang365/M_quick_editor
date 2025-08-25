@@ -109,7 +109,7 @@ function addTemplateAsBackground(imageSrc, templateName) {
     bgElement.style.width = '100%';
     bgElement.style.height = '100%';
     bgElement.style.objectFit = 'cover';
-    bgElement.style.zIndex = '1';
+    bgElement.style.zIndex = '3'; // 배경색 위에 표시
     bgElement.style.pointerEvents = 'none';
     bgElement.id = 'background-template';
     bgElement.alt = templateName;
@@ -701,16 +701,11 @@ function restoreElement(elementData) {
     } else if (type === 'background-template') {
         element = document.createElement('img');
         element.src = elementData.content;
-        // 🔥 배경 템플릿 원본 크기 복원
+        // 배경 템플릿은 항상 100% 크기로 강제 설정 (미리보기와 동일)
         element.onload = function() {
-            if (elementData.styles.width && elementData.styles.height) {
-                this.style.width = elementData.styles.width;
-                this.style.height = elementData.styles.height;
-            } else {
-                // 기본 배경 템플릿 크기
-                this.style.width = '100%';
-                this.style.height = '100%';
-            }
+            this.style.width = '100%';
+            this.style.height = '100%';
+            this.style.objectFit = 'cover';
         };
     } else if (type === 'shape') {
         element = document.createElement('div');
