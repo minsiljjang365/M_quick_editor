@@ -869,7 +869,7 @@
             }, 3000);
         }
         
-        // ========== 템플릿 및 기타 로드 ==========
+// ========== 템플릿 및 기타 로드 ==========
         
         // PPT 편집기 템플릿 로드
         fetch('templates/ppt-editor.html')
@@ -942,6 +942,46 @@
                 });
                 
                 console.log(`📂 프로젝트 불러오기 완료: ${projectData.elements.length}개 요소`);
+                
+                // 캔버스 상태도 함께 복원
+                const canvasState = localStorage.getItem('canvas_state');
+                if (canvasState) {
+                    try {
+                        const parsed = JSON.parse(canvasState);
+                        parsed.elements.forEach(elementData => {
+                            if (elementData.type === 'background-template') {
+                                const bgElement = document.createElement('img');
+                                bgElement.className = elementData.className;
+                                bgElement.id = elementData.id;
+                                bgElement.src = elementData.content;
+                                bgElement.alt = elementData.attributes.alt || 'Background Template';
+                                
+                                // 배경 템플릿 고정 스타일
+                                bgElement.style.cssText = `
+                                    position: absolute;
+                                    left: 0px;
+                                    top: 0px;
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: cover;
+                                    z-index: 3;
+                                    pointer-events: none;
+                                `;
+                                
+                                // 이미지 로드 실패시 제거
+                                bgElement.onerror = function() {
+                                    console.log('템플릿 이미지 로드 실패 - 요소 제거');
+                                    this.remove();
+                                };
+                                
+                                canvas.insertBefore(bgElement, canvas.firstChild);
+                            }
+                        });
+                    } catch (error) {
+                        console.error('캔버스 상태 복원 중 오류:', error);
+                    }
+                }
+                
                 return true;
             }
             return false;
