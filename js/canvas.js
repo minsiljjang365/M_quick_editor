@@ -7,6 +7,10 @@ let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
 let canvasZoom = 1.0;
 let clipboard = null;
+let canvasStateRestored = false; // 🔥 중복 복원 방지 플래그 추가
+
+// 🔥 캔버스 상태 저장 키
+const CANVAS_STATE_KEY = 'canvas_state';
 
 // ===========================================
 // 🎯 요소 추가 기능들
@@ -52,6 +56,9 @@ function addQuickShape(shapeType) {
     
     canvas.appendChild(element);
     selectElement(element);
+    
+    // 🔥 자동 저장 추가
+    saveCanvasState();
 }
 
 // 이미지 요소 추가 (기존 함수 개선)
@@ -79,6 +86,9 @@ function addImageElement(src, x, y) {
     
     canvas.appendChild(element);
     selectElement(element);
+    
+    // 🔥 자동 저장 추가
+    saveCanvasState();
 }
 
 // 템플릿을 배경으로 추가 (기존 함수 유지)
@@ -107,6 +117,9 @@ function addTemplateAsBackground(imageSrc, templateName) {
     canvas.insertBefore(bgElement, canvas.firstChild);
     
     console.log(`배경 템플릿 적용됨: ${templateName}`);
+    
+    // 🔥 자동 저장 추가
+    saveCanvasState();
 }
 
 // ===========================================
@@ -171,10 +184,8 @@ function setupGlobalDragEvents() {
             selectedElement.style.opacity = '';
             selectedElement.style.zIndex = selectedElement.style.zIndex === '999' ? '5' : selectedElement.style.zIndex;
             
-            // 실시간 저장
-            if (typeof saveCanvasState === 'function') {
-                saveCanvasState();
-            }
+            // 🔥 실시간 저장
+            saveCanvasState();
         }
     });
 }
@@ -256,10 +267,8 @@ function deleteSelectedElement() {
         if (imageEditor) imageEditor.style.display = 'none';
         if (selectedTools) selectedTools.style.display = 'none';
         
-        // 실시간 저장
-        if (typeof saveCanvasState === 'function') {
-            saveCanvasState();
-        }
+        // 🔥 실시간 저장
+        saveCanvasState();
     }
 }
 
@@ -271,7 +280,7 @@ function alignLeft() {
     if (!selectedElement) return;
     selectedElement.style.left = '10px';
     updateEditorPositionValues(selectedElement);
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function alignCenter() {
@@ -282,7 +291,7 @@ function alignCenter() {
     const centerX = (canvasWidth - elementWidth) / 2;
     selectedElement.style.left = centerX + 'px';
     updateEditorPositionValues(selectedElement);
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function alignRight() {
@@ -293,14 +302,14 @@ function alignRight() {
     const rightX = canvasWidth - elementWidth - 10;
     selectedElement.style.left = rightX + 'px';
     updateEditorPositionValues(selectedElement);
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function alignTop() {
     if (!selectedElement) return;
     selectedElement.style.top = '10px';
     updateEditorPositionValues(selectedElement);
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function alignMiddle() {
@@ -311,7 +320,7 @@ function alignMiddle() {
     const middleY = (canvasHeight - elementHeight) / 2;
     selectedElement.style.top = middleY + 'px';
     updateEditorPositionValues(selectedElement);
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function alignBottom() {
@@ -322,7 +331,7 @@ function alignBottom() {
     const bottomY = canvasHeight - elementHeight - 10;
     selectedElement.style.top = bottomY + 'px';
     updateEditorPositionValues(selectedElement);
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 // ===========================================
@@ -332,27 +341,27 @@ function alignBottom() {
 function bringToFront() {
     if (!selectedElement) return;
     selectedElement.style.zIndex = '100';
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function sendToBack() {
     if (!selectedElement) return;
     selectedElement.style.zIndex = '2';
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function moveForward() {
     if (!selectedElement) return;
     const currentZ = parseInt(selectedElement.style.zIndex) || 5;
     selectedElement.style.zIndex = (currentZ + 1).toString();
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function moveBackward() {
     if (!selectedElement) return;
     const currentZ = parseInt(selectedElement.style.zIndex) || 5;
     selectedElement.style.zIndex = Math.max(2, currentZ - 1).toString();
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 // ===========================================
@@ -430,7 +439,7 @@ function duplicateElement() {
     canvas.appendChild(newElement);
     selectElement(newElement);
     
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 function groupElements() {
@@ -472,7 +481,7 @@ function applyZoom() {
 function changeBackground(background) {
     removeBackgroundTemplate();
     document.getElementById('canvas').style.background = background;
-    if (typeof saveCanvasState === 'function') saveCanvasState();
+    saveCanvasState();
 }
 
 // 배경 템플릿 제거 (기존 함수 유지)
@@ -508,7 +517,7 @@ function clearCanvas() {
         // 배경도 초기화
         canvas.style.background = '#333';
         
-        if (typeof saveCanvasState === 'function') saveCanvasState();
+        saveCanvasState();
         console.log('캔버스 초기화 완료');
     }
 }
@@ -532,6 +541,216 @@ function resetCanvas() {
 }
 
 // ===========================================
+// 🔥 캔버스 상태 저장/복원 기능 (새로 추가)
+// ===========================================
+
+// 캔버스 상태 저장
+function saveCanvasState() {
+    try {
+        console.log('💾 캔버스 상태 저장 시도');
+        
+        const canvas = document.getElementById('canvas');
+        if (!canvas) return false;
+        
+        const canvasState = {
+            elements: [],
+            background: canvas.style.background || '#333',
+            lastSaved: new Date().toISOString()
+        };
+        
+        // 모든 캔버스 요소 수집
+        canvas.querySelectorAll('.canvas-element').forEach(element => {
+            const elementData = {
+                id: element.id,
+                className: element.className,
+                type: getElementType(element),
+                content: getElementContent(element),
+                styles: getElementStyles(element),
+                attributes: getElementAttributes(element)
+            };
+            canvasState.elements.push(elementData);
+        });
+        
+        localStorage.setItem(CANVAS_STATE_KEY, JSON.stringify(canvasState));
+        console.log('✅ 캔버스 상태 저장 완료:', canvasState.elements.length + '개 요소');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ 캔버스 저장 오류:', error);
+        return false;
+    }
+}
+
+// 캔버스 상태 복원 (중복 방지 추가)
+function loadCanvasState() {
+    // 중복 복원 방지
+    if (canvasStateRestored) {
+        console.log('🚫 이미 복원됨, 중복 방지');
+        return false;
+    }
+    
+    try {
+        console.log('🔄 캔버스 상태 복원 시도');
+        
+        const stored = localStorage.getItem(CANVAS_STATE_KEY);
+        if (!stored) {
+            console.log('🔍 저장된 캔버스 상태 없음');
+            return false;
+        }
+        
+        const canvasState = JSON.parse(stored);
+        const canvas = document.getElementById('canvas');
+        if (!canvas) return false;
+        
+        // 기존 요소들 제거
+        canvas.querySelectorAll('.canvas-element').forEach(element => {
+            element.remove();
+        });
+        
+        // 배경 복원
+        canvas.style.background = canvasState.background;
+        
+        // 요소들 복원
+        canvasState.elements.forEach(elementData => {
+            restoreElement(elementData);
+        });
+        
+        // 복원 완료 플래그 설정
+        canvasStateRestored = true;
+        console.log('✅ 캔버스 상태 복원 완료:', canvasState.elements.length + '개 요소');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ 캔버스 복원 오류:', error);
+        return false;
+    }
+}
+
+// 요소 내용 가져오기
+function getElementContent(element) {
+    const type = getElementType(element);
+    if (type === 'text') return element.textContent;
+    if (type === 'image' || type === 'background-template') return element.src;
+    return '';
+}
+
+// 요소 스타일 가져오기 (템플릿 크기 문제 해결)
+function getElementStyles(element) {
+    return {
+        left: element.style.left,
+        top: element.style.top,
+        fontSize: element.style.fontSize,
+        color: element.style.color,
+        fontFamily: element.style.fontFamily,
+        fontWeight: element.style.fontWeight,
+        fontStyle: element.style.fontStyle,
+        textDecoration: element.style.textDecoration,
+        textAlign: element.style.textAlign,
+        width: element.style.width,
+        height: element.style.height,
+        zIndex: element.style.zIndex,
+        backgroundColor: element.style.backgroundColor,
+        border: element.style.border,
+        padding: element.style.padding,
+        objectFit: element.style.objectFit,
+        pointerEvents: element.style.pointerEvents,
+        borderRadius: element.style.borderRadius,
+        opacity: element.style.opacity
+    };
+}
+
+// 요소 속성 가져오기
+function getElementAttributes(element) {
+    const attributes = {};
+    if (element.getAttribute('data-text-type')) {
+        attributes['data-text-type'] = element.getAttribute('data-text-type');
+    }
+    if (element.alt) attributes.alt = element.alt;
+    return attributes;
+}
+
+// 🔥 요소 복원 (템플릿 크기 문제 해결)
+function restoreElement(elementData) {
+    const canvas = document.getElementById('canvas');
+    const type = elementData.type;
+    let element;
+    
+    if (type === 'text') {
+        element = document.createElement('div');
+        element.textContent = elementData.content;
+        element.onclick = function() {
+            if (typeof selectTextElement === 'function') {
+                selectTextElement(this);
+            } else {
+                selectElement(this);
+            }
+        };
+    } else if (type === 'image') {
+        element = document.createElement('img');
+        element.src = elementData.content;
+        element.onclick = function() {
+            selectElement(this);
+        };
+        // 🔥 이미지 로드 완료 후 크기 복원
+        element.onload = function() {
+            if (elementData.styles.width && elementData.styles.height) {
+                this.style.width = elementData.styles.width;
+                this.style.height = elementData.styles.height;
+            }
+        };
+    } else if (type === 'background-template') {
+        element = document.createElement('img');
+        element.src = elementData.content;
+        // 🔥 배경 템플릿 원본 크기 복원
+        element.onload = function() {
+            if (elementData.styles.width && elementData.styles.height) {
+                this.style.width = elementData.styles.width;
+                this.style.height = elementData.styles.height;
+            } else {
+                // 기본 배경 템플릿 크기
+                this.style.width = '100%';
+                this.style.height = '100%';
+            }
+        };
+    } else if (type === 'shape') {
+        element = document.createElement('div');
+        element.onclick = function() {
+            selectElement(this);
+        };
+    } else {
+        return;
+    }
+    
+    // 기본 속성 설정
+    element.id = elementData.id;
+    element.className = elementData.className;
+    
+    // 스타일 적용
+    Object.keys(elementData.styles).forEach(styleName => {
+        if (elementData.styles[styleName]) {
+            element.style[styleName] = elementData.styles[styleName];
+        }
+    });
+    
+    // 속성 적용
+    Object.keys(elementData.attributes).forEach(attrName => {
+        element.setAttribute(attrName, elementData.attributes[attrName]);
+    });
+    
+    // 드래그 이벤트 설정 (배경 템플릿 제외)
+    if (type !== 'background-template') {
+        setupDragEvents(element);
+    }
+    
+    // 배경 템플릿은 맨 앞에, 나머지는 맨 뒤에
+    if (type === 'background-template') {
+        canvas.insertBefore(element, canvas.firstChild);
+    } else {
+        canvas.appendChild(element);
+    }
+}
+
+// ===========================================
 // 🛠️ 유틸리티 함수들
 // ===========================================
 
@@ -545,12 +764,29 @@ function getElementType(element) {
 }
 
 // ===========================================
-// 🚀 초기화
+// 🚀 초기화 (캔버스 상태 복원 추가)
 // ===========================================
 
 document.addEventListener('DOMContentLoaded', function() {
     // 전역 드래그 이벤트 설정
     setupGlobalDragEvents();
+    
+    // 🔥 중복 복원 방지
+    if (canvasStateRestored) {
+        console.log('🚫 캔버스 상태 이미 복원됨, 중복 방지');
+        return;
+    }
+    
+    // 🔥 페이지 로드 시 캔버스 상태 자동 복원
+    setTimeout(() => {
+        if (!canvasStateRestored) {
+            console.log('🔄 페이지 로드 완료 - 캔버스 상태 복원 시도');
+            const restored = loadCanvasState();
+            if (restored) {
+                canvasStateRestored = true;
+            }
+        }
+    }, 500);
     
     // 캔버스 클릭시 선택 해제
     const canvas = document.getElementById('canvas');
@@ -562,5 +798,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log('✅ Canvas.js 완전판 로드 완료 - 드래그, 정렬, 레이어 모든 기능 활성화');
+    console.log('✅ Canvas.js 완전판 로드 완료 - 드래그, 정렬, 레이어, 저장/복원 모든 기능 활성화');
 });
