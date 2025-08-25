@@ -1,4 +1,4 @@
-// tabs.js - 탭 전환 및 소스 패널 관리 (완전판)
+// tabs.js - 탭 전환 및 소스 패널 관리 (완전판 + 수정)
 
 // 전역 변수
 let currentActiveTab = 'media';
@@ -11,7 +11,7 @@ const TAB_PREFERENCES_KEY = 'user_tab_preferences';
 const TAB_HISTORY_KEY = 'tab_usage_history';
 
 // ===========================================
-// 🔄 기본 탭 전환 기능
+// 📄 기본 탭 전환 기능
 // ===========================================
 
 // 탭 전환 (기존 함수 개선)
@@ -259,6 +259,52 @@ function onTabSwitched(tabName) {
     
     // 접근성 업데이트
     updateAccessibility(tabName);
+}
+
+// 🔥 누락된 함수 추가 - 탭별 특정 동작 수행
+function performTabSpecificActions(tabName) {
+    console.log('🎯 탭별 특정 동작 실행:', tabName);
+    
+    try {
+        switch(tabName) {
+            case 'media':
+                // 미디어 탭 관련 추가 작업
+                if (typeof refreshMediaList === 'function') {
+                    refreshMediaList();
+                }
+                console.log('📷 미디어 탭 특정 동작 완료');
+                break;
+                
+            case 'text':
+                // 텍스트 탭 관련 추가 작업
+                if (typeof updateTextEditor === 'function') {
+                    updateTextEditor();
+                }
+                console.log('📝 텍스트 탭 특정 동작 완료');
+                break;
+                
+            case 'audio':
+                // 오디오 탭 관련 추가 작업
+                if (typeof updateAudioControls === 'function') {
+                    updateAudioControls();
+                }
+                console.log('🎵 오디오 탭 특정 동작 완료');
+                break;
+                
+            case 'template':
+                // 템플릿 탭 관련 추가 작업
+                if (typeof refreshTemplateGallery === 'function') {
+                    refreshTemplateGallery();
+                }
+                console.log('🎨 템플릿 탭 특정 동작 완료');
+                break;
+                
+            default:
+                console.log('🔄 기본 탭 동작:', tabName);
+        }
+    } catch (error) {
+        console.error('❌ 탭 특정 동작 실행 오류:', error);
+    }
 }
 
 // 탭 변경 이벤트 발생
