@@ -699,22 +699,29 @@ function restoreElement(elementData) {
             }
         };
     } else if (type === 'background-template') {
+        // 배경 템플릿은 단순하게 처리
         element = document.createElement('img');
+        element.className = elementData.className;
+        element.id = elementData.id;
         element.src = elementData.content;
-        // 배경 템플릿 크기를 먼저 설정
-        element.style.left = '0px';
-        element.style.top = '0px';
-        element.style.width = '100%';
-        element.style.height = '100%';
-        element.style.objectFit = 'cover';
-        element.style.zIndex = '3';
-        element.style.pointerEvents = 'none';
+        element.alt = elementData.attributes.alt || 'Background Template';
         
-        // onload에서도 한번 더 강제 설정
-        element.onload = function() {
-            this.style.width = '100%';
-            this.style.height = '100%';
-            this.style.objectFit = 'cover';
+        // 고정 스타일 설정 (복원 시에도 항상 동일)
+        element.style.cssText = `
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 3;
+            pointer-events: none;
+        `;
+        
+        // 이미지 로드 실패시 제거
+        element.onerror = function() {
+            console.log('템플릿 이미지 로드 실패 - 요소 제거');
+            this.remove();
         };
     } else if (type === 'shape') {
         element = document.createElement('div');
