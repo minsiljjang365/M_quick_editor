@@ -782,23 +782,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 전역 드래그 이벤트 설정
     setupGlobalDragEvents();
     
-    // 🔥 중복 복원 방지
-    if (canvasStateRestored) {
-        console.log('🚫 캔버스 상태 이미 복원됨, 중복 방지');
-        return;
-    }
-    
-    // 🔥 페이지 로드 시 캔버스 상태 자동 복원
-    setTimeout(() => {
-        if (!canvasStateRestored) {
-            console.log('🔄 페이지 로드 완료 - 캔버스 상태 복원 시도');
-            const restored = loadCanvasState();
-            if (restored) {
-                canvasStateRestored = true;
-            }
-        }
-    }, 500);
-    
     // 캔버스 클릭시 선택 해제
     const canvas = document.getElementById('canvas');
     if (canvas) {
@@ -809,5 +792,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log('✅ Canvas.js 완전판 로드 완료 - 드래그, 정렬, 레이어, 저장/복원 모든 기능 활성화');
+    console.log('Canvas.js 완전판 로드 완료 - 드래그, 정렬, 레이어, 저장/복원 모든 기능 활성화');
 });
