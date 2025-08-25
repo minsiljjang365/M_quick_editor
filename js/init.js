@@ -1,9 +1,5 @@
 // init.js - 초기화 및 이벤트 리스너 설정
 
-// 전역 변수들
-let selectedElement = null;
-let elementCounter = 0;
-
 // 초기화
 document.addEventListener('DOMContentLoaded', function() {
     // 캔버스 바깥 클릭시 선택 해제
