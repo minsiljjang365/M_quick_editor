@@ -430,10 +430,10 @@ function displayVideoResults(videos, resultsDiv, source) {
 }
 
 // ===========================================
-// 🎨 AI 이미지 생성 (fal.ai 사용)
+// 🎨 AI 생성 기능들 (fal.ai 사용)
 // ===========================================
 
-// AI 이미지 생성
+// 1. 텍스트 → 이미지 생성
 async function generateAIImage() {
     const promptInput = document.getElementById('ai-image-prompt');
     const resultDiv = document.getElementById('ai-image-result');
