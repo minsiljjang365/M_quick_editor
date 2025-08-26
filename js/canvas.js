@@ -19,10 +19,110 @@ const CANVAS_STATE_KEY = 'canvas_state';
 // 🎯 요소 추가 기능들
 // ===========================================
 
-// 빠른 이미지 추가
-function addQuickImage() {
-    const defaultImageSrc = 'https://via.placeholder.com/150x150/667eea/white?text=이미지';
-    addImageElement(defaultImageSrc, 100, 100);
+// 빠른 텍스트 추가 (새로 추가)
+function addQuickText() {
+    const canvas = document.getElementById('canvas');
+    const element = document.createElement('div');
+    
+    element.className = 'canvas-element canvas-text';
+    element.textContent = '텍스트 입력';
+    element.style.left = '100px';
+    element.style.top = '100px';
+    element.style.width = '150px';
+    element.style.height = '50px';
+    element.style.position = 'absolute';
+    element.style.cursor = 'move';
+    element.id = 'element-' + (++elementCounter);
+    element.style.zIndex = '5';
+    element.style.padding = '5px';
+    element.style.background = 'rgba(0, 0, 0, 0.7)';
+    element.style.borderRadius = '4px';
+    element.style.color = 'white';
+    element.style.fontSize = '16px';
+    element.style.textAlign = 'center';
+    element.style.display = 'flex';
+    element.style.alignItems = 'center';
+    element.style.justifyContent = 'center';
+    
+    // 🔥 중요: contentEditable을 처음에는 false로 설정
+    element.contentEditable = false;
+    
+    // 클릭 이벤트 (선택용)
+    element.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        selectElement(this);
+    };
+    
+    // 더블클릭 이벤트 (편집용)
+    element.ondblclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        enterTextEditMode(this);
+    };
+    
+    // 드래그 이벤트 추가
+    setupDragEvents(element);
+    
+    canvas.appendChild(element);
+    selectElement(element);
+    
+    saveCanvasState();
+}
+
+// 텍스트 편집 모드 진입
+function enterTextEditMode(element) {
+    if (!element.classList.contains('canvas-text')) return;
+    
+    // 선택 해제 (리사이즈 핸들 숨김)
+    removeResizeHandles();
+    
+    // contentEditable 활성화
+    element.contentEditable = true;
+    element.focus();
+    
+    // 텍스트 전체 선택
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // 편집 완료 이벤트
+    element.onblur = function() {
+        exitTextEditMode(this);
+    };
+    
+    element.onkeydown = function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.blur(); // 편집 완료
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            this.blur(); // 편집 완료
+        }
+    };
+    
+    console.log('📝 텍스트 편집 모드 진입');
+}
+
+// 텍스트 편집 모드 종료
+function exitTextEditMode(element) {
+    if (!element.classList.contains('canvas-text')) return;
+    
+    // contentEditable 비활성화
+    element.contentEditable = false;
+    element.onblur = null;
+    element.onkeydown = null;
+    
+    // 다시 선택 상태로 복귀
+    selectElement(element);
+    
+    // 상태 저장
+    saveCanvasState();
+    
+    console.log('📝 텍스트 편집 모드 종료');
 }
 
 // 빠른 도형 추가
@@ -130,20 +230,31 @@ function setupDragEvents(element) {
     element.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return; // 왼쪽 클릭만
         
-        // 리사이즈 핸들 클릭 체크
+        // 🔥 리사이즈 핸들 클릭 체크 (중요!)
         if (e.target.classList.contains('resize-handle')) {
+            console.log('리사이즈 핸들 클릭됨 - 드래그 무시');
             return; // 핸들 클릭은 리사이즈 처리에 맡김
         }
         
+        // 🔥 텍스트 편집 모드일 때는 드래그 비활성화
+        if (element.contentEditable === 'true') {
+            console.log('텍스트 편집 모드 - 드래그 무시');
+            return;
+        }
+        
+        console.log('드래그 시작 준비');
         isDragging = true;
         isResizing = false;
+        
         const canvas = document.getElementById('canvas');
         const canvasRect = canvas.getBoundingClientRect();
         const elementRect = element.getBoundingClientRect();
         
-        // 드래그 오프셋 계산
+        // 드래그 오프셋 계산 (캔버스 기준)
         dragOffset.x = e.clientX - elementRect.left;
         dragOffset.y = e.clientY - elementRect.top;
+        
+        console.log('드래그 오프셋:', dragOffset);
         
         // 요소 선택
         selectElement(element);
