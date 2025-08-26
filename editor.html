@@ -1902,23 +1902,15 @@ document.addEventListener('mouseup', function() {
             return false;
         }
         
-document.addEventListener('DOMContentLoaded', function() {
-    // URL 파라미터에서 프로젝트 이름 읽기
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectName = urlParams.get('name');
-    
-    // 프로젝트 이름이 있으면 제목 설정
-    if (projectName) {
-        document.getElementById('project-title').textContent = `프로젝트: ${decodeURIComponent(projectName)}`;
-    }
-    
-    console.log('편집기 로드 완료 - 탭 시스템 적용, 플레이어 기능 내장, 크기 조절 기능 추가');
-    
-    // 저장된 프로젝트 자동 불러오기
-    if (loadProject()) {
-        console.log('저장된 프로젝트 자동 복원됨');
-    }
-});
+        // 페이지 로드 완료 시 초기화 및 자동 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎬 편집기 로드 완료 - 탭 시스템 적용, 플레이어 기능 내장, 크기 조절 기능 추가');
+            
+            // 저장된 프로젝트 자동 불러오기
+            if (loadProject()) {
+                console.log('✅ 저장된 프로젝트 자동 복원됨');
+            }
+        });
     </script>
 </body>
 </html>
