@@ -1,150 +1,155 @@
-// media.js - 미디어 처리 관련 모든 함수들 (완전판)
+// media.js - 미디어 관련 기능들 (이미지, 동영상 업로드, 검색, AI 생성)
 
 // 전역 변수
-let uploadedFiles = [];
-let stockImageResults = [];
-let currentMediaFilter = 'all';
+let mediaApiKeys = {
+    pexels: '',
+    pixabay: '',
+    fal_ai: ''
+};
 
 // ===========================================
-// 📁 파일 업로드 기능들
+// 🎯 빠른 이미지 추가 기능
 // ===========================================
 
-// 파일 업로드 (기존 함수 개선)
-function uploadFile(input) {
-    const files = input.files;
-    if (!files || files.length === 0) return;
+// 빠른 이미지 추가 - 파일 선택 다이얼로그
+function addQuickImage() {
+    console.log('📁 파일 선택 다이얼로그 열기');
     
-    // 다중 파일 지원
-    Array.from(files).forEach(file => {
-        processUploadedFile(file);
-    });
+    // 파일 선택 input 생성
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
     
-    // 입력 초기화
-    input.value = '';
+    // 파일 선택 시 처리
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            console.log('📷 파일 선택됨:', file.name);
+            handleImageFile(file);
+        }
+        // input 요소 제거
+        document.body.removeChild(input);
+    };
+    
+    // input을 DOM에 추가하고 클릭
+    document.body.appendChild(input);
+    input.click();
 }
 
-// 업로드된 파일 처리
-function processUploadedFile(file) {
-    console.log('📁 파일 처리 시작:', file.name, file.type);
-    
-    // 파일 크기 체크 (10MB 제한)
-    if (file.size > 10 * 1024 * 1024) {
-        alert(`파일이 너무 큽니다: ${file.name}\n최대 10MB까지 지원됩니다.`);
+// 선택된 이미지 파일 처리
+function handleImageFile(file) {
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
         return;
     }
     
-    // 파일 타입별 처리
-    if (file.type.startsWith('image/')) {
-        processImageFile(file);
-    } else if (file.type.startsWith('video/')) {
-        processVideoFile(file);
-    } else {
-        alert(`지원하지 않는 파일 형식입니다: ${file.name}\n이미지 또는 비디오 파일만 업로드 가능합니다.`);
+    // 파일 크기 검증 (10MB 제한)
+    if (file.size > 10 * 1024 * 1024) {
+        alert('파일 크기는 10MB 이하만 가능합니다.');
+        return;
     }
-}
-
-// 이미지 파일 처리
-function processImageFile(file) {
-    const reader = new FileReader();
     
+    console.log('🔄 이미지 파일 처리 중...');
+    
+    // FileReader로 파일을 Data URL로 변환
+    const reader = new FileReader();
     reader.onload = function(e) {
-        const imageSrc = e.target.result;
+        const imageUrl = e.target.result;
+        console.log('✅ 이미지 URL 생성 완료');
         
-        // 캔버스에 이미지 추가
+        // 캔버스 중앙에 이미지 추가
+        const canvas = document.getElementById('canvas');
+        const centerX = (canvas.offsetWidth / 2) - 75; // 이미지 중앙 정렬
+        const centerY = (canvas.offsetHeight / 2) - 75;
+        
+        // canvas.js의 addImageElement 함수 호출
         if (typeof addImageElement === 'function') {
-            addImageElement(imageSrc, 50, 50);
+            addImageElement(imageUrl, centerX, centerY);
+            console.log('🖼️ 이미지가 캔버스에 추가됨');
+        } else {
+            console.error('❌ addImageElement 함수를 찾을 수 없음');
         }
-        
-        // 업로드된 파일 목록에 추가
-        addToUploadedFiles({
-            name: file.name,
-            type: 'image',
-            src: imageSrc,
-            size: file.size,
-            uploadTime: new Date().toISOString()
-        });
-        
-        console.log('✅ 이미지 업로드 완료:', file.name);
-        showToast(`📷 이미지 업로드 완료\n${file.name}`, 'success');
     };
     
     reader.onerror = function() {
-        console.error('❌ 이미지 파일 읽기 실패:', file.name);
-        alert(`이미지 파일을 읽을 수 없습니다: ${file.name}`);
+        console.error('❌ 파일 읽기 실패');
+        alert('파일을 읽는 중 오류가 발생했습니다.');
     };
     
     reader.readAsDataURL(file);
 }
 
-// 비디오 파일 처리
-function processVideoFile(file) {
+// ===========================================
+// 📤 직접 업로드 기능
+// ===========================================
+
+// 직접 업로드 파일 처리
+function uploadFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    console.log('📤 파일 업로드:', file.name, file.type);
+    
+    // 이미지 파일 처리
+    if (file.type.startsWith('image/')) {
+        handleImageFile(file);
+    }
+    // 동영상 파일 처리 
+    else if (file.type.startsWith('video/')) {
+        handleVideoFile(file);
+    }
+    else {
+        alert('이미지 또는 동영상 파일만 업로드 가능합니다.');
+    }
+    
+    // input 값 초기화
+    input.value = '';
+}
+
+// 선택된 동영상 파일 처리
+function handleVideoFile(file) {
+    // 파일 크기 검증 (100MB 제한)
+    if (file.size > 100 * 1024 * 1024) {
+        alert('동영상 파일 크기는 100MB 이하만 가능합니다.');
+        return;
+    }
+    
+    console.log('🎬 동영상 파일 처리 중...');
+    
     const reader = new FileReader();
-    
     reader.onload = function(e) {
-        const videoSrc = e.target.result;
+        const videoUrl = e.target.result;
+        console.log('✅ 동영상 URL 생성 완료');
         
-        // 비디오 요소 생성
-        createVideoElement(videoSrc, file.name);
+        // 동영상 요소 생성하여 캔버스에 추가
+        const canvas = document.getElementById('canvas');
+        const centerX = (canvas.offsetWidth / 2) - 100;
+        const centerY = (canvas.offsetHeight / 2) - 75;
         
-        // 업로드된 파일 목록에 추가
-        addToUploadedFiles({
-            name: file.name,
-            type: 'video',
-            src: videoSrc,
-            size: file.size,
-            uploadTime: new Date().toISOString()
-        });
-        
-        console.log('✅ 비디오 업로드 완료:', file.name);
-        showToast(`🎬 비디오 업로드 완료\n${file.name}`, 'success');
-    };
-    
-    reader.onerror = function() {
-        console.error('❌ 비디오 파일 읽기 실패:', file.name);
-        alert(`비디오 파일을 읽을 수 없습니다: ${file.name}`);
+        addVideoElement(videoUrl, centerX, centerY);
     };
     
     reader.readAsDataURL(file);
 }
 
-// 업로드된 파일 목록에 추가
-function addToUploadedFiles(fileData) {
-    uploadedFiles.push(fileData);
-    
-    // 최대 50개 파일만 유지
-    if (uploadedFiles.length > 50) {
-        uploadedFiles = uploadedFiles.slice(-50);
-    }
-    
-    // 로컬 스토리지에 저장
-    try {
-        localStorage.setItem('uploaded_files', JSON.stringify(uploadedFiles));
-    } catch (e) {
-        console.warn('업로드 파일 목록 저장 실패');
-    }
-}
-
-// ===========================================
-// 🎬 비디오 요소 생성
-// ===========================================
-
-function createVideoElement(videoSrc, fileName) {
+// 동영상 요소를 캔버스에 추가
+function addVideoElement(src, x, y) {
     const canvas = document.getElementById('canvas');
     const element = document.createElement('video');
     
     element.className = 'canvas-element canvas-video';
-    element.src = videoSrc;
-    element.style.left = '100px';
-    element.style.top = '100px';
+    element.src = src;
+    element.controls = true;
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
     element.style.width = '200px';
     element.style.height = '150px';
     element.style.position = 'absolute';
     element.style.cursor = 'move';
-    element.controls = true;
-    element.muted = true; // 자동재생을 위해 음소거
-    element.id = 'element-' + (++window.elementCounter || Date.now());
-    element.style.zIndex = '6';
-    element.title = fileName;
+    element.id = 'element-' + Date.now();
+    element.style.zIndex = '5';
     
     element.onclick = function() {
         if (typeof selectElement === 'function') {
@@ -152,431 +157,426 @@ function createVideoElement(videoSrc, fileName) {
         }
     };
     
-    // 드래그 이벤트 추가
+    // 드래그 이벤트 설정
     if (typeof setupDragEvents === 'function') {
         setupDragEvents(element);
     }
     
     canvas.appendChild(element);
     
+    // 요소 선택
     if (typeof selectElement === 'function') {
         selectElement(element);
     }
+    
+    // 상태 저장
+    if (typeof saveCanvasState === 'function') {
+        saveCanvasState();
+    }
+    
+    console.log('🎬 동영상이 캔버스에 추가됨');
 }
 
 // ===========================================
-// 🌐 스톡 이미지 검색
+// 🌐 무료 스톡 이미지 검색
 // ===========================================
 
-// 스톡 이미지 검색 (기존 함수 개선)
+// 무료 스톡 이미지 검색
 async function searchStockImages() {
-    const query = document.getElementById('stock-search').value;
-    if (!query.trim()) {
-        alert('검색어를 입력하세요.');
+    const searchInput = document.getElementById('stock-image-search');
+    const resultsDiv = document.getElementById('image-search-results');
+    const query = searchInput.value.trim();
+    
+    if (!query) {
+        alert('검색어를 입력해주세요.');
         return;
     }
     
-    const loadingMsg = showLoading('스톡 이미지 검색 중...');
+    console.log('🔍 이미지 검색:', query);
+    
+    // 로딩 표시
+    resultsDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">검색 중...</div>';
     
     try {
-        // Unsplash API 호출 시뮬레이션 (실제로는 API 키가 필요)
-        const results = await searchUnsplashImages(query.trim());
+        // API 키 가져오기
+        await loadApiKeys();
         
-        hideLoading(loadingMsg);
-        
-        if (results && results.length > 0) {
-            displayStockImageResults(results, query);
-            showToast(`🖼️ ${results.length}개의 스톡 이미지를 찾았습니다.`, 'success');
-        } else {
-            showToast('검색 결과가 없습니다. 다른 키워드를 시도해보세요.', 'info');
+        // Pexels API 우선 사용
+        if (mediaApiKeys.pexels) {
+            await searchPexelsImages(query, resultsDiv);
+        }
+        // Pixabay API 사용
+        else if (mediaApiKeys.pixabay) {
+            await searchPixabayImages(query, resultsDiv);
+        }
+        else {
+            resultsDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">API 키가 설정되지 않았습니다.<br>관리자 페이지에서 API 키를 설정해주세요.</div>';
         }
         
     } catch (error) {
-        hideLoading(loadingMsg);
-        console.error('스톡 이미지 검색 오류:', error);
-        
-        // 오류 시 더미 데이터 표시
-        showDummyStockImages(query);
+        console.error('❌ 이미지 검색 실패:', error);
+        resultsDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">검색 중 오류가 발생했습니다.</div>';
     }
 }
 
-// Unsplash API 검색 (시뮬레이션)
-async function searchUnsplashImages(query) {
-    // 실제 구현시에는 Unsplash API를 호출
-    // 현재는 더미 데이터 반환
-    return generateDummyStockImages(query);
-}
-
-// 더미 스톡 이미지 데이터 생성
-function generateDummyStockImages(query) {
-    const baseUrl = 'https://picsum.photos';
-    const results = [];
+// Pexels API 검색
+async function searchPexelsImages(query, resultsDiv) {
+    const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=6`, {
+        headers: {
+            'Authorization': mediaApiKeys.pexels
+        }
+    });
     
-    for (let i = 0; i < 8; i++) {
-        results.push({
-            id: `stock-${Date.now()}-${i}`,
-            url: `${baseUrl}/300/200/?random=${Date.now()}-${i}`,
-            thumb: `${baseUrl}/150/100/?random=${Date.now()}-${i}`,
-            title: `${query} 관련 이미지 ${i + 1}`,
-            author: `작가${i + 1}`,
-            description: `${query}와 관련된 고품질 스톡 이미지입니다.`
-        });
+    if (!response.ok) {
+        throw new Error('Pexels API 호출 실패');
     }
     
-    return results;
+    const data = await response.json();
+    displayImageResults(data.photos, resultsDiv, 'pexels');
 }
 
-// 더미 스톡 이미지 표시
-function showDummyStockImages(query) {
-    const dummyResults = generateDummyStockImages(query);
-    displayStockImageResults(dummyResults, query);
-    showToast(`🎨 ${query} 관련 샘플 이미지를 표시합니다.\n(실제 API는 관리자 페이지에서 설정)`, 'info');
+// Pixabay API 검색
+async function searchPixabayImages(query, resultsDiv) {
+    const response = await fetch(`https://pixabay.com/api/?key=${mediaApiKeys.pixabay}&q=${encodeURIComponent(query)}&image_type=photo&per_page=6`);
+    
+    if (!response.ok) {
+        throw new Error('Pixabay API 호출 실패');
+    }
+    
+    const data = await response.json();
+    displayImageResults(data.hits, resultsDiv, 'pixabay');
 }
 
-// 스톡 이미지 결과 표시
-function displayStockImageResults(results, query) {
-    stockImageResults = results;
+// 이미지 검색 결과 표시
+function displayImageResults(images, resultsDiv, source) {
+    if (!images || images.length === 0) {
+        resultsDiv.innerHTML = '<div style="color: #ccc; padding: 10px;">검색 결과가 없습니다.</div>';
+        return;
+    }
     
-    // 결과를 소스 패널에 추가 (기존 미디어 소스 뒤에)
-    const mediaSection = document.getElementById('media-sources');
-    if (!mediaSection) return;
+    resultsDiv.innerHTML = '';
     
-    // 기존 스톡 결과 제거
-    const existingResults = mediaSection.querySelectorAll('.stock-result-item');
-    existingResults.forEach(item => item.remove());
-    
-    // 구분선 추가
-    const divider = document.createElement('div');
-    divider.className = 'stock-result-item';
-    divider.style.cssText = 'margin: 10px 0; padding: 8px; background: #444; border-radius: 4px; text-align: center; color: #ccc; font-size: 12px;';
-    divider.textContent = `🔍 "${query}" 검색 결과 (${results.length}개)`;
-    mediaSection.appendChild(divider);
-    
-    // 결과 이미지들 추가
-    results.forEach(result => {
-        const item = document.createElement('div');
-        item.className = 'source-item stock-result-item';
-        item.draggable = true;
-        item.setAttribute('data-type', 'image');
-        item.setAttribute('data-src', result.url);
+    images.forEach(image => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'search-result-item';
         
-        item.innerHTML = `
-            <div class="source-item-title">📷 ${result.title}</div>
-            <div class="source-item-desc">by ${result.author}</div>
-            <img src="${result.thumb}" style="width: 100%; height: 60px; object-fit: cover; margin-top: 5px; border-radius: 3px;">
+        // 소스별 이미지 데이터 구조 처리
+        let imageUrl, thumbnailUrl, title, photographer;
+        
+        switch(source) {
+            case 'pexels':
+                imageUrl = image.src.large;
+                thumbnailUrl = image.src.tiny;
+                title = image.alt || 'Untitled';
+                photographer = image.photographer;
+                break;
+            case 'pixabay':
+                imageUrl = image.webformatURL;
+                thumbnailUrl = image.previewURL;
+                title = image.tags.substring(0, 30) + '...';
+                photographer = image.user;
+                break;
+        }
+        
+        resultItem.innerHTML = `
+            <img src="${thumbnailUrl}" alt="${title}" class="search-result-thumbnail">
+            <div class="search-result-info">
+                <div class="search-result-title">${title}</div>
+                <div class="search-result-source">${photographer} - ${source}</div>
+            </div>
         `;
         
-        // 드래그 이벤트 추가
-        item.addEventListener('dragstart', function(e) {
-            if (typeof dragStart === 'function') {
-                dragStart.call(this, e);
-            }
-        });
-        
-        item.addEventListener('dragend', function(e) {
-            if (typeof dragEnd === 'function') {
-                dragEnd.call(this, e);
-            }
-        });
-        
-        // 클릭으로 바로 추가
-        item.addEventListener('click', function() {
+        // 클릭 이벤트 - 캔버스에 이미지 추가
+        resultItem.onclick = function() {
+            console.log('🖼️ 스톡 이미지 선택:', title);
+            
+            const canvas = document.getElementById('canvas');
+            const centerX = (canvas.offsetWidth / 2) - 75;
+            const centerY = (canvas.offsetHeight / 2) - 75;
+            
             if (typeof addImageElement === 'function') {
-                addImageElement(result.url, 120, 120);
-                showToast(`📷 스톡 이미지 추가됨\n${result.title}`, 'success');
+                addImageElement(imageUrl, centerX, centerY);
+                console.log('✅ 스톡 이미지 캔버스에 추가됨');
             }
-        });
+        };
         
-        mediaSection.appendChild(item);
+        resultsDiv.appendChild(resultItem);
     });
 }
 
 // ===========================================
-// 🎨 AI 이미지 생성
+// 🎬 무료 스톡 동영상 검색
 // ===========================================
 
-// AI 이미지 생성 (기존 함수 개선)
+// 무료 스톡 동영상 검색
+async function searchStockVideos() {
+    const searchInput = document.getElementById('stock-video-search');
+    const resultsDiv = document.getElementById('video-search-results');
+    const query = searchInput.value.trim();
+    
+    if (!query) {
+        alert('검색어를 입력해주세요.');
+        return;
+    }
+    
+    console.log('🔍 동영상 검색:', query);
+    
+    // 로딩 표시
+    resultsDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">검색 중...</div>';
+    
+    try {
+        // API 키 가져오기
+        await loadApiKeys();
+        
+        // Pexels Video API 우선 사용
+        if (mediaApiKeys.pexels) {
+            await searchPexelsVideos(query, resultsDiv);
+        }
+        // Pixabay Video API 사용
+        else if (mediaApiKeys.pixabay) {
+            await searchPixabayVideos(query, resultsDiv);
+        }
+        else {
+            resultsDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">API 키가 설정되지 않았습니다.<br>관리자 페이지에서 API 키를 설정해주세요.</div>';
+        }
+        
+    } catch (error) {
+        console.error('❌ 동영상 검색 실패:', error);
+        resultsDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">검색 중 오류가 발생했습니다.</div>';
+    }
+}
+
+// Pexels Video API 검색
+async function searchPexelsVideos(query, resultsDiv) {
+    const response = await fetch(`https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=6`, {
+        headers: {
+            'Authorization': mediaApiKeys.pexels
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error('Pexels Video API 호출 실패');
+    }
+    
+    const data = await response.json();
+    displayVideoResults(data.videos, resultsDiv, 'pexels');
+}
+
+// Pixabay Video API 검색
+async function searchPixabayVideos(query, resultsDiv) {
+    const response = await fetch(`https://pixabay.com/api/videos/?key=${mediaApiKeys.pixabay}&q=${encodeURIComponent(query)}&per_page=6`);
+    
+    if (!response.ok) {
+        throw new Error('Pixabay Video API 호출 실패');
+    }
+    
+    const data = await response.json();
+    displayVideoResults(data.hits, resultsDiv, 'pixabay');
+}
+
+// 동영상 검색 결과 표시
+function displayVideoResults(videos, resultsDiv, source) {
+    if (!videos || videos.length === 0) {
+        resultsDiv.innerHTML = '<div style="color: #ccc; padding: 10px;">검색 결과가 없습니다.</div>';
+        return;
+    }
+    
+    resultsDiv.innerHTML = '';
+    
+    videos.forEach(video => {
+        const resultItem = document.createElement('div');
+        resultItem.className = 'search-result-item';
+        
+        // 소스별 동영상 데이터 구조 처리
+        let videoUrl, thumbnailUrl, title, author;
+        
+        switch(source) {
+            case 'pexels':
+                videoUrl = video.video_files[0]?.link || '';
+                thumbnailUrl = video.image || '';
+                title = video.tags || 'Untitled Video';
+                author = video.user?.name || 'Unknown';
+                break;
+            case 'pixabay':
+                videoUrl = video.videos?.medium?.url || '';
+                thumbnailUrl = video.userImageURL || '';
+                title = video.tags.substring(0, 30) + '...';
+                author = video.user;
+                break;
+        }
+        
+        resultItem.innerHTML = `
+            <img src="${thumbnailUrl}" alt="${title}" class="search-result-thumbnail">
+            <div class="search-result-info">
+                <div class="search-result-title">${title}</div>
+                <div class="search-result-source">${author} - ${source}</div>
+            </div>
+        `;
+        
+        // 클릭 이벤트 - 캔버스에 동영상 추가
+        resultItem.onclick = function() {
+            console.log('🎬 스톡 동영상 선택:', title);
+            
+            const canvas = document.getElementById('canvas');
+            const centerX = (canvas.offsetWidth / 2) - 100;
+            const centerY = (canvas.offsetHeight / 2) - 75;
+            
+            addVideoElement(videoUrl, centerX, centerY);
+            console.log('✅ 스톡 동영상 캔버스에 추가됨');
+        };
+        
+        resultsDiv.appendChild(resultItem);
+    });
+}
+
+// ===========================================
+// 🎨 AI 이미지 생성 (fal.ai 사용)
+// ===========================================
+
+// AI 이미지 생성
 async function generateAIImage() {
-    const prompt = document.getElementById('ai-image-prompt').value;
-    if (!prompt.trim()) {
-        alert('생성할 이미지에 대한 설명을 입력하세요.');
+    const promptInput = document.getElementById('ai-image-prompt');
+    const resultDiv = document.getElementById('ai-image-result');
+    const prompt = promptInput.value.trim();
+    
+    if (!prompt) {
+        alert('이미지 설명을 입력해주세요.');
         return;
     }
     
-    const loadingMsg = showLoading('AI 이미지 생성 중...');
+    console.log('🎨 AI 이미지 생성 요청:', prompt);
+    
+    // 로딩 표시
+    resultDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">AI 이미지 생성 중... (약 10-30초 소요)</div>';
     
     try {
-        // AI 이미지 생성 API 호출 시뮬레이션
-        const result = await callAIImageAPI(prompt.trim());
+        // API 키 가져오기
+        await loadApiKeys();
         
-        hideLoading(loadingMsg);
-        
-        if (result && result.url) {
-            // 생성된 이미지를 캔버스에 추가
-            if (typeof addImageElement === 'function') {
-                addImageElement(result.url, 80, 80);
-            }
-            
-            // 생성된 이미지 저장
-            addToUploadedFiles({
-                name: `AI 생성 - ${prompt.substring(0, 30)}`,
-                type: 'ai-image',
-                src: result.url,
-                prompt: prompt,
-                uploadTime: new Date().toISOString()
-            });
-            
-            showToast(`🎨 AI 이미지 생성 완료!\n${prompt.substring(0, 50)}...`, 'success');
-        } else {
-            throw new Error('이미지 생성 실패');
+        if (!mediaApiKeys.fal_ai) {
+            resultDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">fal.ai API 키가 설정되지 않았습니다.<br>관리자 페이지에서 API 키를 설정해주세요.</div>';
+            return;
         }
         
-    } catch (error) {
-        hideLoading(loadingMsg);
-        console.error('AI 이미지 생성 오류:', error);
+        // fal.ai API 호출
+        const response = await fetch('https://fal.run/fal-ai/flux/schnell', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Key ${mediaApiKeys.fal_ai}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                image_size: "square_hd"
+            })
+        });
         
-        // 오류 시 더미 이미지 생성
-        generateDummyAIImage(prompt);
-    }
-}
-
-// AI 이미지 생성 API 호출 (시뮬레이션)
-async function callAIImageAPI(prompt) {
-    // 실제로는 DALL-E, Midjourney, Stable Diffusion 등의 API 호출
-    // 현재는 더미 이미지 반환
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                url: `https://picsum.photos/400/400/?random=${Date.now()}&blur=1`,
-                id: `ai-${Date.now()}`,
-                prompt: prompt
-            });
-        }, 3000); // 3초 대기 (생성 시간 시뮬레이션)
-    });
-}
-
-// 더미 AI 이미지 생성
-function generateDummyAIImage(prompt) {
-    const dummyUrl = `https://picsum.photos/400/400/?random=${Date.now()}`;
-    
-    if (typeof addImageElement === 'function') {
-        addImageElement(dummyUrl, 80, 80);
-    }
-    
-    addToUploadedFiles({
-        name: `AI 생성 (데모) - ${prompt.substring(0, 30)}`,
-        type: 'ai-image-demo',
-        src: dummyUrl,
-        prompt: prompt,
-        uploadTime: new Date().toISOString()
-    });
-    
-    showToast(`🎨 AI 이미지 생성 (데모)\n${prompt.substring(0, 50)}...\n(실제 AI는 관리자 페이지에서 설정)`, 'info');
-}
-
-// ===========================================
-// 📚 미디어 라이브러리 관리
-// ===========================================
-
-// 업로드된 파일 목록 표시
-function showUploadedFiles() {
-    if (uploadedFiles.length === 0) {
-        alert('업로드된 파일이 없습니다.');
-        return;
-    }
-    
-    const mediaSection = document.getElementById('media-sources');
-    if (!mediaSection) return;
-    
-    // 기존 업로드 결과 제거
-    const existingUploads = mediaSection.querySelectorAll('.upload-result-item');
-    existingUploads.forEach(item => item.remove());
-    
-    // 구분선 추가
-    const divider = document.createElement('div');
-    divider.className = 'upload-result-item';
-    divider.style.cssText = 'margin: 10px 0; padding: 8px; background: #444; border-radius: 4px; text-align: center; color: #ccc; font-size: 12px;';
-    divider.innerHTML = `📁 업로드된 파일 (${uploadedFiles.length}개) <button onclick="clearUploadedFiles()" style="margin-left: 10px; padding: 2px 6px; background: #e74c3c; color: white; border: none; border-radius: 3px; font-size: 10px; cursor: pointer;">모두 삭제</button>`;
-    mediaSection.appendChild(divider);
-    
-    // 파일들 표시 (최근 것부터)
-    const recentFiles = uploadedFiles.slice().reverse().slice(0, 10);
-    recentFiles.forEach(file => {
-        const item = document.createElement('div');
-        item.className = 'source-item upload-result-item';
-        item.draggable = true;
-        item.setAttribute('data-type', file.type);
-        item.setAttribute('data-src', file.src);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`fal.ai API 오류: ${errorData.detail || response.status}`);
+        }
         
-        const typeIcon = file.type === 'video' ? '🎬' : file.type.includes('ai') ? '🎨' : '📷';
-        const uploadDate = new Date(file.uploadTime).toLocaleDateString();
+        const data = await response.json();
+        const imageUrl = data.images[0].url;
         
-        item.innerHTML = `
-            <div class="source-item-title">${typeIcon} ${file.name}</div>
-            <div class="source-item-desc">${uploadDate}</div>
+        // 생성된 이미지 미리보기 표시
+        resultDiv.innerHTML = `
+            <div class="search-result-item" style="cursor: pointer;">
+                <img src="${imageUrl}" alt="AI Generated Image" class="search-result-thumbnail">
+                <div class="search-result-info">
+                    <div class="search-result-title">생성된 이미지</div>
+                    <div class="search-result-source">fal.ai Generated</div>
+                </div>
+            </div>
         `;
         
-        if (file.type === 'image' || file.type.includes('ai-image')) {
-            const preview = document.createElement('img');
-            preview.src = file.src;
-            preview.style.cssText = 'width: 100%; height: 60px; object-fit: cover; margin-top: 5px; border-radius: 3px;';
-            item.appendChild(preview);
-        }
-        
-        // 이벤트 추가
-        item.addEventListener('dragstart', function(e) {
-            if (typeof dragStart === 'function') {
-                dragStart.call(this, e);
+        // 클릭 이벤트 - 캔버스에 이미지 추가
+        resultDiv.querySelector('.search-result-item').onclick = function() {
+            console.log('🎨 AI 생성 이미지 선택');
+            
+            const canvas = document.getElementById('canvas');
+            const centerX = (canvas.offsetWidth / 2) - 75;
+            const centerY = (canvas.offsetHeight / 2) - 75;
+            
+            if (typeof addImageElement === 'function') {
+                addImageElement(imageUrl, centerX, centerY);
+                console.log('✅ AI 생성 이미지 캔버스에 추가됨');
             }
-        });
+        };
         
-        item.addEventListener('click', function() {
-            if (file.type === 'video') {
-                createVideoElement(file.src, file.name);
-            } else if (typeof addImageElement === 'function') {
-                addImageElement(file.src, 100, 100);
-            }
-            showToast(`${typeIcon} 미디어 추가됨\n${file.name}`, 'success');
-        });
+        console.log('✅ AI 이미지 생성 완료');
         
-        mediaSection.appendChild(item);
-    });
-}
-
-// 업로드된 파일 전체 삭제
-function clearUploadedFiles() {
-    if (confirm('업로드된 모든 파일을 삭제하시겠습니까?')) {
-        uploadedFiles = [];
-        localStorage.removeItem('uploaded_files');
-        
-        // UI에서도 제거
-        const mediaSection = document.getElementById('media-sources');
-        if (mediaSection) {
-            const uploadItems = mediaSection.querySelectorAll('.upload-result-item');
-            uploadItems.forEach(item => item.remove());
-        }
-        
-        showToast('📁 업로드 파일 목록이 삭제되었습니다.', 'info');
+    } catch (error) {
+        console.error('❌ AI 이미지 생성 실패:', error);
+        resultDiv.innerHTML = `<div style="color: #ff6b6b; padding: 10px;">AI 이미지 생성 실패:<br>${error.message}</div>`;
     }
 }
 
 // ===========================================
-// 🛠️ 유틸리티 함수들
+// 🔧 유틸리티 함수들
 // ===========================================
 
-// 로딩 메시지 표시
-function showLoading(message) {
-    const loading = document.createElement('div');
-    loading.id = 'media-loading';
-    loading.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 20px 30px;
-        border-radius: 8px;
-        z-index: 10000;
-        font-family: Arial, sans-serif;
-        text-align: center;
-    `;
-    
-    loading.innerHTML = `
-        <div style="margin-bottom: 15px;">⏳</div>
-        <div>${message}</div>
-    `;
-    
-    document.body.appendChild(loading);
-    return loading;
-}
-
-// 로딩 메시지 숨김
-function hideLoading(loadingElement) {
-    if (loadingElement && loadingElement.parentNode) {
-        loadingElement.remove();
-    }
-}
-
-// 토스트 메시지 표시 (navigation.js와 동일한 함수)
-function showToast(message, type = 'info') {
-    const existingToast = document.getElementById('toast-message');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    const toast = document.createElement('div');
-    toast.id = 'toast-message';
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
-        max-width: 300px;
-        white-space: pre-line;
-    `;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
-    }, 3000);
-}
-
-// ===========================================
-// 🚀 초기화 및 이벤트 설정
-// ===========================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    // 저장된 업로드 파일 목록 불러오기
+// API 키 불러오기
+async function loadApiKeys() {
     try {
-        const stored = localStorage.getItem('uploaded_files');
+        // localStorage에서 API 키 불러오기
+        const stored = localStorage.getItem('apiKeys');
         if (stored) {
-            uploadedFiles = JSON.parse(stored);
-            console.log(`📁 저장된 업로드 파일 ${uploadedFiles.length}개 불러옴`);
+            const apiKeys = JSON.parse(stored);
+            mediaApiKeys.pexels = apiKeys.pexels || '';
+            mediaApiKeys.pixabay = apiKeys.pixabay || '';
+            mediaApiKeys.fal_ai = apiKeys.fal_ai || '';
+            console.log('🔑 API 키 로드 완료');
         }
-    } catch (e) {
-        console.warn('업로드 파일 목록 불러오기 실패');
-        uploadedFiles = [];
+    } catch (error) {
+        console.error('❌ API 키 로드 실패:', error);
+    }
+}
+
+// 미디어 기능 초기화
+function initMediaFeatures() {
+    console.log('🎬 미디어 기능 초기화');
+    
+    // API 키 로드
+    loadApiKeys();
+    
+    // 엔터 키 검색 지원
+    const imageSearchInput = document.getElementById('stock-image-search');
+    const videoSearchInput = document.getElementById('stock-video-search');
+    const aiPromptInput = document.getElementById('ai-image-prompt');
+    
+    if (imageSearchInput) {
+        imageSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchStockImages();
+            }
+        });
     }
     
-    // 미디어 섹션에 "내 파일" 버튼 추가
-    setTimeout(() => {
-        addMyFilesButton();
-    }, 1000);
+    if (videoSearchInput) {
+        videoSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchStockVideos();
+            }
+        });
+    }
     
-    console.log('✅ Media.js 완전판 로드 완료 - 파일 업로드, 스톡 검색, AI 생성 모든 기능 활성화');
+    if (aiPromptInput) {
+        aiPromptInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateAIImage();
+            }
+        });
+    }
+    
+    console.log('✅ 미디어 기능 초기화 완료');
+}
+
+// DOM 로드 완료 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    // 약간의 지연 후 초기화 (다른 스크립트들이 로드되기를 기다림)
+    setTimeout(initMediaFeatures, 100);
 });
 
-// "내 파일" 버튼 추가
-function addMyFilesButton() {
-    const mediaSection = document.getElementById('media-sources');
-    if (!mediaSection) return;
-    
-    const myFilesItem = document.createElement('div');
-    myFilesItem.className = 'source-item';
-    myFilesItem.innerHTML = `
-        <div class="source-item-title">📁 내 업로드 파일</div>
-        <div class="source-item-desc">업로드한 파일들 보기</div>
-        <button onclick="showUploadedFiles()" style="width: 100%; margin-top: 5px; padding: 5px; background: #667eea; border: none; color: white; border-radius: 3px; cursor: pointer;">파일 목록 보기</button>
-    `;
-    
-    // AI 이미지 생성 아이템 바로 뒤에 추가
-    const aiItem = mediaSection.querySelector('.source-item:last-child');
-    if (aiItem && aiItem.nextSibling) {
-        mediaSection.insertBefore(myFilesItem, aiItem.nextSibling);
-    } else {
-        mediaSection.appendChild(myFilesItem);
-    }
-}
+console.log('📦 media.js 로드 완료 - 이미지/동영상 업로드, 검색 (Pexels, Pixabay), AI 생성 (fal.ai)');
