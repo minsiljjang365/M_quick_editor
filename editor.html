@@ -926,7 +926,7 @@ function switchEditorTab(tabName) {
             const textElement = document.createElement('div');
             textElement.className = 'canvas-element canvas-text';
             textElement.innerHTML = '텍스트 입력';
-            textElement.contentEditable = true;
+            textElement.contentEditable = false;
             textElement.style.position = 'absolute';
             textElement.style.left = '50px';
             textElement.style.top = '50px';
@@ -938,7 +938,7 @@ function switchEditorTab(tabName) {
             
             textElement.addEventListener('mousedown', function(e) {
                 // 텍스트 편집 중이 아닐 때만 드래그 시작
-                if (e.target === this) {
+                if (!this.isContentEditable || e.ctrlKey) {
                     isDragging = true;
                     startX = e.clientX;
                     startY = e.clientY;
@@ -967,9 +967,24 @@ function switchEditorTab(tabName) {
             
             textElement.onclick = function() {
     selectElement(this);
-    switchEditorTab('text'); // 이 줄 추가
+    switchEditorTab('text');
     loadTextToEditor(this);
 };
+
+// 더블클릭: 텍스트 편집 모드
+textElement.addEventListener('dblclick', function() {
+    this.contentEditable = true;
+    this.focus();
+});
+
+// 편집 완료 시
+textElement.addEventListener('blur', function() {
+    this.contentEditable = false;
+    const textContent = document.getElementById('text-content');
+    if (textContent) {
+        textContent.value = this.textContent || this.innerHTML;
+    }
+});
 
             // 여기에 추가
 textElement.addEventListener('input', function() {
