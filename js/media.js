@@ -14,6 +14,12 @@ async function generateImageToImage() {
     const modelSelect = document.getElementById('image-to-image-model');
     const resultDiv = document.getElementById('ai-image-to-image-result');
     
+    // DOM 요소 존재 확인
+    if (!fileInput || !promptInput || !resultDiv) {
+        console.error('❌ 필요한 DOM 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     const file = fileInput.files[0];
     const prompt = promptInput.value.trim();
     
@@ -83,6 +89,8 @@ async function generateImageToImage() {
         // 클릭시 캔버스에 추가
         resultDiv.querySelector('.search-result-item').onclick = function() {
             const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
             const centerX = (canvas.offsetWidth / 2) - 75;
             const centerY = (canvas.offsetHeight / 2) - 75;
             
@@ -102,6 +110,13 @@ async function generateTextToVideo() {
     const promptInput = document.getElementById('ai-text-to-video-prompt');
     const modelSelect = document.getElementById('text-to-video-model');
     const resultDiv = document.getElementById('ai-text-to-video-result');
+    
+    // DOM 요소 존재 확인
+    if (!promptInput || !resultDiv) {
+        console.error('❌ 필요한 DOM 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     const prompt = promptInput.value.trim();
     
     if (!prompt) {
@@ -159,6 +174,8 @@ async function generateTextToVideo() {
         // 클릭시 캔버스에 추가
         resultDiv.querySelector('.search-result-item').onclick = function() {
             const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
             const centerX = (canvas.offsetWidth / 2) - 100;
             const centerY = (canvas.offsetHeight / 2) - 75;
             
@@ -178,8 +195,14 @@ async function generateImageToVideo() {
     const modelSelect = document.getElementById('image-to-video-model');
     const resultDiv = document.getElementById('ai-image-to-video-result');
     
+    // DOM 요소 존재 확인
+    if (!fileInput || !resultDiv) {
+        console.error('❌ 필요한 DOM 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     const file = fileInput.files[0];
-    const prompt = promptInput.value.trim() || 'animate this image';
+    const prompt = promptInput ? promptInput.value.trim() || 'animate this image' : 'animate this image';
     
     if (!file) {
         alert('이미지 파일을 선택해주세요.');
@@ -240,6 +263,8 @@ async function generateImageToVideo() {
         // 클릭시 캔버스에 추가
         resultDiv.querySelector('.search-result-item').onclick = function() {
             const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
             const centerX = (canvas.offsetWidth / 2) - 100;
             const centerY = (canvas.offsetHeight / 2) - 75;
             
@@ -249,7 +274,8 @@ async function generateImageToVideo() {
     } catch (error) {
         console.error('이미지→동영상 생성 실패:', error);
         resultDiv.innerHTML = `<div style="color: #ff6b6b; padding: 10px;">생성 실패: ${error.message}</div>`;
-    };
+    }
+}
 
 // ===========================================
 // 🎯 빠른 이미지 추가 기능
@@ -295,7 +321,7 @@ function handleImageFile(file) {
         return;
     }
     
-    console.log('🔄 이미지 파일 처리 중...');
+    console.log('📄 이미지 파일 처리 중...');
     
     // FileReader로 파일을 Data URL로 변환
     const reader = new FileReader();
@@ -305,6 +331,11 @@ function handleImageFile(file) {
         
         // 캔버스 중앙에 이미지 추가
         const canvas = document.getElementById('canvas');
+        if (!canvas) {
+            console.error('❌ 캔버스를 찾을 수 없습니다');
+            return;
+        }
+        
         const centerX = (canvas.offsetWidth / 2) - 75; // 이미지 중앙 정렬
         const centerY = (canvas.offsetHeight / 2) - 75;
         
@@ -369,6 +400,11 @@ function handleVideoFile(file) {
         
         // 동영상 요소 생성하여 캔버스에 추가
         const canvas = document.getElementById('canvas');
+        if (!canvas) {
+            console.error('❌ 캔버스를 찾을 수 없습니다');
+            return;
+        }
+        
         const centerX = (canvas.offsetWidth / 2) - 100;
         const centerY = (canvas.offsetHeight / 2) - 75;
         
@@ -381,6 +417,11 @@ function handleVideoFile(file) {
 // 동영상 요소를 캔버스에 추가
 function addVideoElement(src, x, y) {
     const canvas = document.getElementById('canvas');
+    if (!canvas) {
+        console.error('❌ 캔버스를 찾을 수 없습니다');
+        return;
+    }
+    
     const element = document.createElement('video');
     
     element.className = 'canvas-element canvas-video';
@@ -429,6 +470,13 @@ function addVideoElement(src, x, y) {
 async function searchStockImages() {
     const searchInput = document.getElementById('stock-image-search');
     const resultsDiv = document.getElementById('image-search-results');
+    
+    // DOM 요소 존재 확인
+    if (!searchInput || !resultsDiv) {
+        console.error('❌ 검색에 필요한 DOM 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     const query = searchInput.value.trim();
     
     if (!query) {
@@ -535,6 +583,8 @@ function displayImageResults(images, resultsDiv, source) {
             console.log('🖼️ 스톡 이미지 선택:', title);
             
             const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
             const centerX = (canvas.offsetWidth / 2) - 75;
             const centerY = (canvas.offsetHeight / 2) - 75;
             
@@ -556,6 +606,13 @@ function displayImageResults(images, resultsDiv, source) {
 async function searchStockVideos() {
     const searchInput = document.getElementById('stock-video-search');
     const resultsDiv = document.getElementById('video-search-results');
+    
+    // DOM 요소 존재 확인
+    if (!searchInput || !resultsDiv) {
+        console.error('❌ 검색에 필요한 DOM 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     const query = searchInput.value.trim();
     
     if (!query) {
@@ -662,6 +719,8 @@ function displayVideoResults(videos, resultsDiv, source) {
             console.log('🎬 스톡 동영상 선택:', title);
             
             const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
             const centerX = (canvas.offsetWidth / 2) - 100;
             const centerY = (canvas.offsetHeight / 2) - 75;
             
@@ -682,6 +741,13 @@ async function generateAIImage() {
     const promptInput = document.getElementById('ai-image-prompt');
     const modelSelect = document.getElementById('text-to-image-model');
     const resultDiv = document.getElementById('ai-image-result');
+    
+    // DOM 요소 존재 확인
+    if (!promptInput || !resultDiv) {
+        console.error('❌ 필요한 DOM 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     const prompt = promptInput.value.trim();
     
     if (!prompt) {
@@ -743,6 +809,8 @@ async function generateAIImage() {
             console.log('🎨 AI 생성 이미지 선택');
             
             const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+            
             const centerX = (canvas.offsetWidth / 2) - 75;
             const centerY = (canvas.offsetHeight / 2) - 75;
             
@@ -795,14 +863,14 @@ async function loadApiKeys() {
     }
 }
 
-// 미디어 기능 초기화
+// 🔥 미디어 기능 초기화 (외부에서 호출용)
 function initMediaFeatures() {
     console.log('🎬 미디어 기능 초기화');
     
     // API 키 로드
     loadApiKeys();
     
-    // 엔터 키 검색 지원
+    // 엔터 키 검색 지원 - DOM 요소 존재 확인 후 이벤트 등록
     const imageSearchInput = document.getElementById('stock-image-search');
     const videoSearchInput = document.getElementById('stock-video-search');
     const aiPromptInput = document.getElementById('ai-image-prompt');
@@ -813,6 +881,9 @@ function initMediaFeatures() {
                 searchStockImages();
             }
         });
+        console.log('✅ 이미지 검색 엔터키 이벤트 등록');
+    } else {
+        console.log('⚠️ stock-image-search 요소를 찾을 수 없음');
     }
     
     if (videoSearchInput) {
@@ -821,6 +892,9 @@ function initMediaFeatures() {
                 searchStockVideos();
             }
         });
+        console.log('✅ 동영상 검색 엔터키 이벤트 등록');
+    } else {
+        console.log('⚠️ stock-video-search 요소를 찾을 수 없음');
     }
     
     if (aiPromptInput) {
@@ -830,15 +904,15 @@ function initMediaFeatures() {
                 generateAIImage();
             }
         });
+        console.log('✅ AI 이미지 생성 엔터키 이벤트 등록');
+    } else {
+        console.log('⚠️ ai-image-prompt 요소를 찾을 수 없음');
     }
     
     console.log('✅ 미디어 기능 초기화 완료');
 }
 
-// DOM 로드 완료 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    // 약간의 지연 후 초기화 (다른 스크립트들이 로드되기를 기다림)
-    setTimeout(initMediaFeatures, 100);
-});
+// 🔥 전역 함수로 노출 (editor.html에서 호출용)
+window.initMediaFeatures = initMediaFeatures;
 
 console.log('📦 media.js 로드 완료 - 이미지/동영상 업로드, 검색 (Pexels, Pixabay), AI 생성 (fal.ai)');
