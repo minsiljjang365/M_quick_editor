@@ -5,7 +5,251 @@ let mediaApiKeys = {
     pexels: '',
     pixabay: '',
     fal_ai: ''
-};
+}
+
+// 2. 이미지 → 이미지 생성
+async function generateImageToImage() {
+    const fileInput = document.getElementById('ai-image-to-image-file');
+    const promptInput = document.getElementById('ai-image-to-image-prompt');
+    const modelSelect = document.getElementById('image-to-image-model');
+    const resultDiv = document.getElementById('ai-image-to-image-result');
+    
+    const file = fileInput.files[0];
+    const prompt = promptInput.value.trim();
+    
+    if (!file) {
+        alert('이미지 파일을 선택해주세요.');
+        return;
+    }
+    
+    if (!prompt) {
+        alert('변환 설명을 입력해주세요.');
+        return;
+    }
+    
+    // 선택된 모델 가져오기 (없으면 기본값)
+    const selectedModel = modelSelect ? modelSelect.value : 'fal-ai/flux/dev/image-to-image';
+    
+    console.log('이미지→이미지 생성 요청:', prompt, '모델:', selectedModel);
+    
+    // 로딩 표시
+    resultDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">이미지 변환 중...</div>';
+    
+    try {
+        await loadApiKeys();
+        
+        if (!mediaApiKeys.fal_ai) {
+            resultDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">fal.ai API 키가 설정되지 않았습니다.</div>';
+            return;
+        }
+        
+        // 이미지를 base64로 변환
+        const imageBase64 = await fileToBase64(file);
+        
+        // fal.ai image-to-image API 호출
+        const response = await fetch(`https://fal.run/${selectedModel}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Key ${mediaApiKeys.fal_ai}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                image_url: imageBase64,
+                strength: 0.75,
+                image_size: "square_hd"
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`fal.ai API 오류: ${errorData.detail || response.status}`);
+        }
+        
+        const data = await response.json();
+        const imageUrl = data.images[0].url;
+        
+        // 생성된 이미지 표시
+        resultDiv.innerHTML = `
+            <div class="search-result-item" style="cursor: pointer;">
+                <img src="${imageUrl}" alt="Image to Image Result" class="search-result-thumbnail">
+                <div class="search-result-info">
+                    <div class="search-result-title">변환된 이미지</div>
+                    <div class="search-result-source">Image-to-Image AI</div>
+                </div>
+            </div>
+        `;
+        
+        // 클릭시 캔버스에 추가
+        resultDiv.querySelector('.search-result-item').onclick = function() {
+            const canvas = document.getElementById('canvas');
+            const centerX = (canvas.offsetWidth / 2) - 75;
+            const centerY = (canvas.offsetHeight / 2) - 75;
+            
+            if (typeof addImageElement === 'function') {
+                addImageElement(imageUrl, centerX, centerY);
+            }
+        };
+        
+    } catch (error) {
+        console.error('이미지→이미지 생성 실패:', error);
+        resultDiv.innerHTML = `<div style="color: #ff6b6b; padding: 10px;">생성 실패: ${error.message}</div>`;
+    }
+}
+
+// 3. 텍스트 → 동영상 생성
+async function generateTextToVideo() {
+    const promptInput = document.getElementById('ai-text-to-video-prompt');
+    const modelSelect = document.getElementById('text-to-video-model');
+    const resultDiv = document.getElementById('ai-text-to-video-result');
+    const prompt = promptInput.value.trim();
+    
+    if (!prompt) {
+        alert('동영상 설명을 입력해주세요.');
+        return;
+    }
+    
+    // 선택된 모델 가져오기 (없으면 기본값)
+    const selectedModel = modelSelect ? modelSelect.value : 'fal-ai/luma-dream-machine';
+    
+    console.log('텍스트→동영상 생성 요청:', prompt, '모델:', selectedModel);
+    
+    // 로딩 표시
+    resultDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">AI 동영상 생성 중... (1-3분 소요)</div>';
+    
+    try {
+        await loadApiKeys();
+        
+        if (!mediaApiKeys.fal_ai) {
+            resultDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">fal.ai API 키가 설정되지 않았습니다.</div>';
+            return;
+        }
+        
+        // fal.ai text-to-video API 호출
+        const response = await fetch(`https://fal.run/${selectedModel}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Key ${mediaApiKeys.fal_ai}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`fal.ai API 오류: ${errorData.detail || response.status}`);
+        }
+        
+        const data = await response.json();
+        const videoUrl = data.video.url;
+        
+        // 생성된 동영상 표시
+        resultDiv.innerHTML = `
+            <div class="search-result-item" style="cursor: pointer;">
+                <video src="${videoUrl}" class="search-result-thumbnail" muted></video>
+                <div class="search-result-info">
+                    <div class="search-result-title">생성된 동영상</div>
+                    <div class="search-result-source">Text-to-Video AI</div>
+                </div>
+            </div>
+        `;
+        
+        // 클릭시 캔버스에 추가
+        resultDiv.querySelector('.search-result-item').onclick = function() {
+            const canvas = document.getElementById('canvas');
+            const centerX = (canvas.offsetWidth / 2) - 100;
+            const centerY = (canvas.offsetHeight / 2) - 75;
+            
+            addVideoElement(videoUrl, centerX, centerY);
+        };
+        
+    } catch (error) {
+        console.error('텍스트→동영상 생성 실패:', error);
+        resultDiv.innerHTML = `<div style="color: #ff6b6b; padding: 10px;">생성 실패: ${error.message}</div>`;
+    }
+}
+
+// 4. 이미지 → 동영상 생성
+async function generateImageToVideo() {
+    const fileInput = document.getElementById('ai-image-to-video-file');
+    const promptInput = document.getElementById('ai-image-to-video-prompt');
+    const modelSelect = document.getElementById('image-to-video-model');
+    const resultDiv = document.getElementById('ai-image-to-video-result');
+    
+    const file = fileInput.files[0];
+    const prompt = promptInput.value.trim() || 'animate this image';
+    
+    if (!file) {
+        alert('이미지 파일을 선택해주세요.');
+        return;
+    }
+    
+    // 선택된 모델 가져오기 (없으면 기본값)
+    const selectedModel = modelSelect ? modelSelect.value : 'fal-ai/luma-dream-machine';
+    
+    console.log('이미지→동영상 생성 요청:', prompt, '모델:', selectedModel);
+    
+    // 로딩 표시
+    resultDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">이미지 애니메이션 중... (1-3분 소요)</div>';
+    
+    try {
+        await loadApiKeys();
+        
+        if (!mediaApiKeys.fal_ai) {
+            resultDiv.innerHTML = '<div style="color: #ff6b6b; padding: 10px;">fal.ai API 키가 설정되지 않았습니다.</div>';
+            return;
+        }
+        
+        // 이미지를 base64로 변환
+        const imageBase64 = await fileToBase64(file);
+        
+        // fal.ai image-to-video API 호출
+        const response = await fetch(`https://fal.run/${selectedModel}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Key ${mediaApiKeys.fal_ai}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                image_url: imageBase64
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`fal.ai API 오류: ${errorData.detail || response.status}`);
+        }
+        
+        const data = await response.json();
+        const videoUrl = data.video.url;
+        
+        // 생성된 동영상 표시
+        resultDiv.innerHTML = `
+            <div class="search-result-item" style="cursor: pointer;">
+                <video src="${videoUrl}" class="search-result-thumbnail" muted></video>
+                <div class="search-result-info">
+                    <div class="search-result-title">애니메이션 동영상</div>
+                    <div class="search-result-source">Image-to-Video AI</div>
+                </div>
+            </div>
+        `;
+        
+        // 클릭시 캔버스에 추가
+        resultDiv.querySelector('.search-result-item').onclick = function() {
+            const canvas = document.getElementById('canvas');
+            const centerX = (canvas.offsetWidth / 2) - 100;
+            const centerY = (canvas.offsetHeight / 2) - 75;
+            
+            addVideoElement(videoUrl, centerX, centerY);
+        };
+        
+    } catch (error) {
+        console.error('이미지→동영상 생성 실패:', error);
+        resultDiv.innerHTML = `<div style="color: #ff6b6b; padding: 10px;">생성 실패: ${error.message}</div>`;
+    };
 
 // ===========================================
 // 🎯 빠른 이미지 추가 기능
@@ -436,6 +680,7 @@ function displayVideoResults(videos, resultsDiv, source) {
 // 1. 텍스트 → 이미지 생성
 async function generateAIImage() {
     const promptInput = document.getElementById('ai-image-prompt');
+    const modelSelect = document.getElementById('text-to-image-model');
     const resultDiv = document.getElementById('ai-image-result');
     const prompt = promptInput.value.trim();
     
@@ -444,7 +689,10 @@ async function generateAIImage() {
         return;
     }
     
-    console.log('🎨 AI 이미지 생성 요청:', prompt);
+    // 선택된 모델 가져오기 (없으면 기본값)
+    const selectedModel = modelSelect ? modelSelect.value : 'fal-ai/flux/schnell';
+    
+    console.log('🎨 AI 이미지 생성 요청:', prompt, '모델:', selectedModel);
     
     // 로딩 표시
     resultDiv.innerHTML = '<div style="color: white; text-align: center; padding: 10px;">AI 이미지 생성 중... (약 10-30초 소요)</div>';
@@ -459,7 +707,7 @@ async function generateAIImage() {
         }
         
         // fal.ai API 호출
-        const response = await fetch('https://fal.run/fal-ai/flux/schnell', {
+        const response = await fetch(`https://fal.run/${selectedModel}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Key ${mediaApiKeys.fal_ai}`,
@@ -515,6 +763,20 @@ async function generateAIImage() {
 // ===========================================
 // 🔧 유틸리티 함수들
 // ===========================================
+
+// 파일을 base64로 변환하는 유틸리티 함수
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            resolve(e.target.result);
+        };
+        reader.onerror = function(e) {
+            reject(new Error('파일 읽기 실패'));
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
 // API 키 불러오기
 async function loadApiKeys() {
