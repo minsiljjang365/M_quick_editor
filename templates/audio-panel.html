@@ -1,0 +1,28 @@
+<!-- 음성 소스 패널 -->
+<div class="source-item">
+    <div class="source-item-title">📤 음성파일 업로드</div>
+    <div class="source-item-desc">나레이션, 대사 등</div>
+    <input type="file" accept="audio/*" onchange="uploadAudioFile(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+    <div id="uploaded-audio-list" style="margin-top: 10px;"></div>
+</div>
+
+<div class="source-item">
+    <div class="source-item-title">📊 보유 효과음</div>
+    <div class="source-item-desc">업로드한 효과음 선택</div>
+    <input type="file" accept="audio/*" multiple onchange="uploadEffectSounds(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+    <div id="effect-sounds-list" style="margin-top: 10px;"></div>
+</div>
+
+<div class="source-item">
+    <div class="source-item-title">🌐 무료 효과음</div>
+    <div class="source-item-desc">API로 무료 효과음 검색</div>
+    <input type="text" placeholder="효과음 검색 (예: 박수, 폭발)" id="sfx-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+    <button onclick="searchFreeSFX()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
+    <div id="free-sfx-results" style="margin-top: 10px;"></div>
+</div>
+
+<div class="source-item">
+    <div class="source-item-title">🎙️ 음성 녹음</div>
+    <div class="source-item-desc">실시간 녹음</div>
+    <button onclick="showRecordingMessage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #6c757d; border: none; color: white; border-radius: 3px; cursor: pointer;">🔴 녹음 시작</button>
+</div>
