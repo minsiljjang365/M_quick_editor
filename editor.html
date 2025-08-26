@@ -355,8 +355,8 @@
                 <div class="ppt-section">
                     <h4>레이어 관리</h4>
                     <div class="button-group">
-                        <button onclick="bringToFront()">🔤 맨앞으로</button>
-                        <button onclick="sendToBack()">🔥 맨뒤로</button>
+                        <button onclick="bringToFront()">📤 맨앞으로</button>
+                        <button onclick="sendToBack()">📥 맨뒤로</button>
                     </div>
                     <div class="button-group" style="margin-top: 5px;">
                         <button onclick="moveForward()">⬆️ 앞으로</button>
@@ -644,7 +644,7 @@
                         <h4>🎯 선택된 요소</h4>
                         <div class="button-group">
                             <button onclick="copySelectedElement()">📋 복사</button>
-                            <button onclick="duplicateElement()">🔁 복제</button>
+                            <button onclick="duplicateElement()">📄 복제</button>
                         </div>
                         <div class="button-group" style="margin-top: 5px;">
                             <button onclick="groupElements()">🔗 그룹</button>
@@ -821,45 +821,7 @@
                 
                 <!-- 음성 소스 -->
                 <div id="audio-sources" class="source-section">
-                    <div class="source-item">
-                        <div class="source-item-title">🎵 배경음악</div>
-                        <div class="source-item-desc">프로젝트 배경음악 설정</div>
-                        <input type="file" accept="audio/*" onchange="uploadBGM(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
-                    </div>
-                    
-                    <div class="source-item">
-                        <div class="source-item-title">📤 음성파일 업로드</div>
-                        <div class="source-item-desc">나레이션, 대사 등</div>
-                        <input type="file" accept="audio/*" onchange="uploadAudio(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
-                    </div>
-                    
-                    <div class="source-item">
-                        <div class="source-item-title">📊 보유 효과음</div>
-                        <div class="source-item-desc">업로드한 효과음 선택</div>
-                        <select id="owned-sfx" onchange="selectOwnedSFX()" style="width: 100%; margin-top: 5px;">
-                            <option value="">효과음 선택</option>
-                            <option value="click">클릭 소리</option>
-                            <option value="whoosh">움직임 소리</option>
-                            <option value="ding">알림음</option>
-                        </select>
-                        <input type="file" accept="audio/*" onchange="uploadSFX(this)" style="width: 100%; margin-top: 5px; font-size: 11px;" placeholder="새 효과음 추가">
-                    </div>
-                    
-                    <div class="source-item">
-                        <div class="source-item-title">🌐 무료 효과음</div>
-                        <div class="source-item-desc">API로 무료 효과음 검색</div>
-                        <input type="text" placeholder="효과음 검색 (예: 박수, 폭발)" id="sfx-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
-                        <button onclick="searchFreeSFX()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
-                    </div>
-                    
-                    <div class="source-item">
-                        <div class="source-item-title">🎙️ 음성 녹음</div>
-                        <div class="source-item-desc">실시간 녹음</div>
-                        <div class="button-group">
-                            <button onclick="startRecording()">🔴 녹음</button>
-                            <button onclick="stopRecording()">⏹️ 정지</button>
-                        </div>
-                    </div>
+                    <!-- templates/audio-panel.html 내용이 여기에 로드됩니다 -->
                 </div>
                 
                 <!-- 템플릿 소스 -->
@@ -1103,6 +1065,121 @@
             }
             
             saveCanvasState();
+        }
+
+        // ========== 오디오 관련 함수들 (새로 추가) ==========
+        
+        // 음성파일 업로드 함수
+        function uploadAudioFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            console.log('음성파일 업로드:', file.name);
+            
+            // 파일을 처리하여 목록에 추가
+            const audioList = document.getElementById('uploaded-audio-list');
+            if (audioList) {
+                const audioItem = document.createElement('div');
+                audioItem.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0; padding: 5px; background: #404040; border-radius: 4px;">
+                        <span style="color: white; font-size: 11px; flex: 1;">${file.name}</span>
+                        <button onclick="playAudio('${file.name}')" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; font-size: 10px;">재생</button>
+                        <button onclick="addAudioToCanvas('${file.name}')" style="padding: 2px 6px; background: #28a745; color: white; border: none; border-radius: 3px; font-size: 10px;">추가</button>
+                    </div>
+                `;
+                audioList.appendChild(audioItem);
+            }
+        }
+        
+        // 효과음 업로드 함수
+        function uploadEffectSounds(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+            
+            console.log('효과음 업로드:', files.map(f => f.name));
+            
+            // 파일들을 처리하여 목록에 추가
+            const effectList = document.getElementById('effect-sounds-list');
+            if (effectList) {
+                files.forEach(file => {
+                    const effectItem = document.createElement('div');
+                    effectItem.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0; padding: 5px; background: #404040; border-radius: 4px;">
+                            <span style="color: white; font-size: 11px; flex: 1;">🔊 ${file.name}</span>
+                            <button onclick="playEffect('${file.name}')" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; font-size: 10px;">재생</button>
+                            <button onclick="addEffectToCanvas('${file.name}')" style="padding: 2px 6px; background: #28a745; color: white; border: none; border-radius: 3px; font-size: 10px;">사용</button>
+                        </div>
+                    `;
+                    effectList.appendChild(effectItem);
+                });
+            }
+        }
+        
+        // 무료 효과음 검색 함수
+        function searchFreeSFX() {
+            const query = document.getElementById('sfx-search').value.trim();
+            if (!query) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+            
+            console.log('무료 효과음 검색:', query);
+            
+            // API 연결 예정 - 임시로 가짜 결과 표시
+            const resultsContainer = document.getElementById('free-sfx-results');
+            if (resultsContainer) {
+                resultsContainer.innerHTML = `
+                    <div style="color: #ccc; font-size: 11px; text-align: center; margin: 10px 0;">
+                        "${query}" 검색 결과 (API 연결 예정)
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0; padding: 5px; background: #404040; border-radius: 4px;">
+                        <span style="color: white; font-size: 11px; flex: 1;">🎵 ${query}_sound_01.wav</span>
+                        <button onclick="playFreeSFX('sample1')" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; font-size: 10px;">재생</button>
+                        <button onclick="downloadFreeSFX('sample1')" style="padding: 2px 6px; background: #28a745; color: white; border: none; border-radius: 3px; font-size: 10px;">다운</button>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0; padding: 5px; background: #404040; border-radius: 4px;">
+                        <span style="color: white; font-size: 11px; flex: 1;">🎵 ${query}_sound_02.wav</span>
+                        <button onclick="playFreeSFX('sample2')" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; font-size: 10px;">재생</button>
+                        <button onclick="downloadFreeSFX('sample2')" style="padding: 2px 6px; background: #28a745; color: white; border: none; border-radius: 3px; font-size: 10px;">다운</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // 녹음 예정 메시지
+        function showRecordingMessage() {
+            alert('🎙️ 음성 녹음 기능은 구현예정입니다.\n\n향후 업데이트에서 다음 기능들이 추가될 예정입니다:\n- 실시간 음성 녹음\n- 마이크 음성 입력\n- 녹음 파일 편집\n- 음성 품질 조절');
+        }
+        
+        // 오디오 재생 관련 함수들
+        function playAudio(fileName) {
+            console.log('음성 재생:', fileName);
+            // 실제 재생 기능 구현 예정
+        }
+        
+        function addAudioToCanvas(fileName) {
+            console.log('캔버스에 음성 추가:', fileName);
+            // 캔버스에 음성 트랙 추가 기능 구현 예정
+        }
+        
+        function playEffect(fileName) {
+            console.log('효과음 재생:', fileName);
+            // 실제 재생 기능 구현 예정
+        }
+        
+        function addEffectToCanvas(fileName) {
+            console.log('캔버스에 효과음 추가:', fileName);
+            // 캔버스에 효과음 추가 기능 구현 예정
+        }
+        
+        function playFreeSFX(sampleId) {
+            console.log('무료 효과음 재생:', sampleId);
+            // 실제 재생 기능 구현 예정
+        }
+        
+        function downloadFreeSFX(sampleId) {
+            console.log('무료 효과음 다운로드:', sampleId);
+            // 실제 다운로드 기능 구현 예정
         }
 
         // ========== 네비게이션 기능 업데이트 ==========
@@ -1425,15 +1502,17 @@
         
         // ========== 템플릿 및 기타 로드 ==========
         
-        // PPT 편집기 템플릿 로드
-        fetch('templates/ppt-editor.html')
+        // 오디오 패널 로드
+        fetch('templates/audio-panel.html')
             .then(response => response.text())
             .then(html => {
-                // 이미 HTML에 내장되어 있으므로 추가 로드 불필요
-                
-                // 텍스트 편집기 로드
-                return fetch('templates/text-editor.html');
+                document.getElementById('audio-sources').innerHTML = html;
+                console.log('🎵 오디오 패널 로드 완료');
             })
+            .catch(error => console.error('오디오 패널 로드 실패:', error));
+
+        // 텍스트 편집기 로드
+        fetch('templates/text-editor.html')
             .then(response => response.text())
             .then(html => {
                 const pptContent = document.getElementById('ppt-content');
@@ -1448,6 +1527,7 @@
             .then(response => response.text())
             .then(html => {
                 document.getElementById('template-sources').innerHTML = html;
+                console.log('🎨 템플릿 패널 로드 완료');
             })
             .catch(error => console.error('템플릿 패널 로드 실패:', error));
             
@@ -1546,7 +1626,7 @@
         
         // 페이지 로드 완료 시 초기화 및 자동 불러오기
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장, 크기 조절 기능 추가, AI 모델 선택 UI 포함');
+            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장, 크기 조절 기능 추가, AI 모델 선택 UI 포함, 오디오 패널 분리');
             
             // 저장된 프로젝트 자동 불러오기
             if (loadProject()) {
