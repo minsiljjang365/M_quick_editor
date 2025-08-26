@@ -765,20 +765,28 @@
     
     <script>
         // ========== 탭 전환 함수 ==========
-        function switchEditorTab(tabName) {
-            // 모든 탭 비활성화
-            const tabs = document.querySelectorAll('.editor-tab');
-            const contents = document.querySelectorAll('.editor-tab-content');
-            
-            tabs.forEach(tab => tab.classList.remove('active'));
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // 선택된 탭 활성화
-            const selectedTab = document.querySelector(`[onclick="switchEditorTab('${tabName}')"]`);
-            const selectedContent = document.getElementById(`${tabName}-tab`);
-            
-            if (selectedTab) selectedTab.classList.add('active');
-            if (selectedContent) selectedContent.classList.add('active');
+function switchEditorTab(tabName) {
+    // 모든 탭 비활성화
+    const tabs = document.querySelectorAll('.editor-tab');
+    const contents = document.querySelectorAll('.editor-tab-content');
+    
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.backgroundColor = '#555';
+        tab.style.color = '#ccc';
+    });
+    contents.forEach(content => content.classList.remove('active'));
+    
+    // 선택된 탭 활성화
+    const selectedTab = document.querySelector(`[onclick="switchEditorTab('${tabName}')"]`);
+    const selectedContent = document.getElementById(`${tabName}-tab`);
+    
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+        selectedTab.style.backgroundColor = '#007bff';
+        selectedTab.style.color = 'white';
+    }
+    if (selectedContent) selectedContent.classList.add('active');
             
             // 텍스트 탭으로 전환할 때 선택된 텍스트 요소가 있으면 편집 도구에 로드
             if (tabName === 'text' && selectedElement && selectedElement.classList.contains('canvas-text')) {
@@ -964,7 +972,21 @@
                     loadTextToEditor(this);
                 }
             };
-            
+
+            // 여기에 추가
+textElement.addEventListener('input', function() {
+    const textContent = document.getElementById('text-content');
+    if (textContent && document.getElementById('text-tab').classList.contains('active')) {
+        textContent.value = this.textContent || this.innerHTML;
+    }
+});
+
+textElement.addEventListener('blur', function() {
+    const textContent = document.getElementById('text-content');
+    if (textContent && document.getElementById('text-tab').classList.contains('active')) {
+        textContent.value = this.textContent || this.innerHTML;
+    }
+});
             canvas.appendChild(textElement);
             
             // 텍스트 탭으로 이동
