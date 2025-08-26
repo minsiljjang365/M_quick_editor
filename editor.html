@@ -702,6 +702,21 @@
                 </div>
                 
                 <!-- 텍스트 소스 -->
+                <div id="text-sources" class="source-section">
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="제목 텍스트">
+                        <div class="source-item-title">📝 제목</div>
+                        <div class="source-item-desc">메인 제목용 텍스트</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="설명 텍스트">
+                        <div class="source-item-title">💬 설명</div>
+                        <div class="source-item-desc">부제목이나 설명용</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="클릭하세요!">
+                        <div class="source-item-title">🎯 CTA</div>
+                        <div class="source-item-desc">행동 유도 메시지</div>
+                    </div>
                     
                     <div class="source-item">
                         <div class="source-item-title">📜 대본 작성</div>
@@ -1005,12 +1020,11 @@ textElement.addEventListener('blur', function() {
                         imgElement.style.width = '100px';
                         imgElement.style.height = 'auto';
                         imgElement.style.cursor = 'move';
-// 드래그 기능을 위한 이벤트 처리
+// 드래그 기능 추가
 let isDragging = false;
 let startX, startY, initialX, initialY;
 
 imgElement.addEventListener('mousedown', function(e) {
-    // Ctrl 키를 누를 때만 드래그 시작
     if (e.ctrlKey) {
         isDragging = true;
         startX = e.clientX;
@@ -1080,7 +1094,7 @@ imgElement.onclick = function() {
             } else if (shapeType === 'rectangle') {
                 shapeElement.style.backgroundColor = '#667eea';
             }
-            // 드래그 기능 추가
+// 드래그 기능 추가
 let isDragging = false;
 let startX, startY, initialX, initialY;
 
@@ -1111,6 +1125,7 @@ document.addEventListener('mouseup', function() {
         shapeElement.style.cursor = 'move';
     }
 });
+            
 shapeElement.onclick = function() {
     selectElement(this);
     switchEditorTab('shape'); // 이 줄 추가
