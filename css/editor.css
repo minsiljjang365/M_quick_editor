@@ -52,6 +52,7 @@ body {
     flex: 1;
     background: #000;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
@@ -290,7 +291,7 @@ body {
 }
 
 /* ==========================================
-   리사이즈 핸들 스타일 (새로 추가)
+   리사이즈 핸들 스타일
    ========================================== */
 
 .resize-handle {
@@ -396,144 +397,10 @@ body {
 }
 
 /* ==========================================
-   반응형 및 접근성
+   플레이어 모드 스타일
    ========================================== */
 
-/* 작은 화면에서 핸들 크기 조정 */
-@media (max-width: 1200px) {
-    .resize-handle {
-        width: 12px;
-        height: 12px;
-    }
-}
-
-/* 터치 디바이스에서 핸들 크기 증가 */
-@media (hover: none) and (pointer: coarse) {
-    .resize-handle {
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-    }
-}
-
-/* 고대비 모드 지원 */
-@media (prefers-contrast: high) {
-    .resize-handle {
-        background: #ffffff;
-        border: 3px solid #000000;
-    }
-    
-    .resize-handle:hover {
-        background: #ffff00;
-        border-color: #000000;
-    }
-}
-
-/* 애니메이션 줄이기 설정 */
-@media (prefers-reduced-motion: reduce) {
-    .resize-handle,
-    .canvas-element {
-        transition: none;
-    }
-}
-
-/* ==========================================
-   추가 UI 개선사항
-   ========================================== */
-
-/* 핸들이 캔버스 경계를 넘지 않도록 제한 */
-.resize-handle {
-    box-sizing: border-box;
-}
-
-/* 선택 표시기 개선 */
-.canvas-element.selected::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    border: 1px dashed rgba(102, 126, 234, 0.6);
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* 드래그 중 시각적 피드백 */
-.canvas-element.dragging {
-    opacity: 0.8;
-    transform: scale(1.02);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    z-index: 999;
-}
-
-/* 리사이즈 가이드라인 (선택사항) */
-.resize-guidelines {
-    position: absolute;
-    pointer-events: none;
-    z-index: 998;
-}
-
-.resize-guideline-h {
-    height: 1px;
-    background: rgba(102, 126, 234, 0.5);
-    width: 100%;
-    position: absolute;
-}
-
-.resize-guideline-v {
-    width: 1px;
-    background: rgba(102, 126, 234, 0.5);
-    height: 100%;
-    position: absolute;
-}
-
-/* ==========================================
-   성능 최적화
-   ========================================== */
-
-/* GPU 가속 활성화 */
-.resize-handle,
-.canvas-element.dragging,
-.canvas-element.resizing {
-    will-change: transform;
-    transform: translateZ(0);
-}
-
-/* 스크롤바 커스터마이징 */
-#ppt-content::-webkit-scrollbar,
-#source-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-#ppt-content::-webkit-scrollbar-track,
-#source-content::-webkit-scrollbar-track {
-    background: #2d2d2d;
-}
-
-#ppt-content::-webkit-scrollbar-thumb,
-#source-content::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 3px;
-}
-
-#ppt-content::-webkit-scrollbar-thumb:hover,
-#source-content::-webkit-scrollbar-thumb:hover {
-    background: #666;
-}
-
-/* ==========================================
-   editor.html에서 분리한 추가 스타일들
-   ========================================== */
-
-/* 캔버스 영역 내부만 위아래 배치 */
-#canvas-area {
-    display: flex;
-    flex-direction: column;
-}
-
-/* 플레이어 모드 전환 버튼 스타일 */
+/* 모드 전환 버튼 스타일 */
 .mode-controls {
     display: flex;
     gap: 10px;
@@ -772,4 +639,185 @@ body {
 
 .ai-section-content {
     padding: 10px;
+}
+
+/* ==========================================
+   편집기 탭 시스템
+   ========================================== */
+
+#editor-tabs {
+    display: flex;
+    background: #333;
+    border-bottom: 1px solid #404040;
+    overflow-x: auto;
+}
+
+.editor-tab {
+    flex: 1;
+    padding: 10px 8px;
+    background: none;
+    border: none;
+    color: #bbb;
+    cursor: pointer;
+    font-size: 11px;
+    text-align: center;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    white-space: nowrap;
+}
+
+.editor-tab.active {
+    color: white;
+    border-bottom-color: #007bff;
+    background: #404040;
+}
+
+.editor-tab:hover {
+    background: #404040;
+    color: white;
+}
+
+.editor-tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.editor-tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   반응형 및 접근성
+   ========================================== */
+
+/* 작은 화면에서 핸들 크기 조정 */
+@media (max-width: 1200px) {
+    .resize-handle {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* 터치 디바이스에서 핸들 크기 증가 */
+@media (hover: none) and (pointer: coarse) {
+    .resize-handle {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+    }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+    .resize-handle {
+        background: #ffffff;
+        border: 3px solid #000000;
+    }
+    
+    .resize-handle:hover {
+        background: #ffff00;
+        border-color: #000000;
+    }
+}
+
+/* 애니메이션 줄이기 설정 */
+@media (prefers-reduced-motion: reduce) {
+    .resize-handle,
+    .canvas-element,
+    .editor-tab-content {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* ==========================================
+   추가 UI 개선사항
+   ========================================== */
+
+/* 핸들이 캔버스 경계를 넘지 않도록 제한 */
+.resize-handle {
+    box-sizing: border-box;
+}
+
+/* 선택 표시기 개선 */
+.canvas-element.selected::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 1px dashed rgba(102, 126, 234, 0.6);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 드래그 중 시각적 피드백 */
+.canvas-element.dragging {
+    opacity: 0.8;
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+}
+
+/* 리사이즈 가이드라인 (선택사항) */
+.resize-guidelines {
+    position: absolute;
+    pointer-events: none;
+    z-index: 998;
+}
+
+.resize-guideline-h {
+    height: 1px;
+    background: rgba(102, 126, 234, 0.5);
+    width: 100%;
+    position: absolute;
+}
+
+.resize-guideline-v {
+    width: 1px;
+    background: rgba(102, 126, 234, 0.5);
+    height: 100%;
+    position: absolute;
+}
+
+/* ==========================================
+   성능 최적화
+   ========================================== */
+
+/* GPU 가속 활성화 */
+.resize-handle,
+.canvas-element.dragging,
+.canvas-element.resizing {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* 스크롤바 커스터마이징 */
+#ppt-content::-webkit-scrollbar,
+#source-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#ppt-content::-webkit-scrollbar-track,
+#source-content::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+#ppt-content::-webkit-scrollbar-thumb,
+#source-content::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 3px;
+}
+
+#ppt-content::-webkit-scrollbar-thumb:hover,
+#source-content::-webkit-scrollbar-thumb:hover {
+    background: #666;
 }
