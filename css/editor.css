@@ -11,7 +11,7 @@ body {
     overflow: hidden;
 }
 
-/* 상단 네비게이션 */
+/* 상단 내비게이션 */
 #navbar {
     height: 50px;
     background: #2d2d2d;
@@ -521,4 +521,255 @@ body {
 #ppt-content::-webkit-scrollbar-thumb:hover,
 #source-content::-webkit-scrollbar-thumb:hover {
     background: #666;
+}
+
+/* ==========================================
+   editor.html에서 분리한 추가 스타일들
+   ========================================== */
+
+/* 캔버스 영역 내부만 위아래 배치 */
+#canvas-area {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 플레이어 모드 전환 버튼 스타일 */
+.mode-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #2a2a2a;
+    border-radius: 8px;
+}
+
+.mode-btn {
+    padding: 10px 20px;
+    border: 2px solid #555;
+    background: #404040;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    background: #555;
+    border-color: #007bff;
+}
+
+.mode-btn.active {
+    background: #007bff;
+    border-color: #0056b3;
+    color: white;
+}
+
+/* 플레이어 컨트롤 스타일 */
+.player-controls {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    background: #2a2a2a;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.control-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.play-btn {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: #007bff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stop-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 6px;
+    background: #dc3545;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.time-display {
+    color: white;
+    font-family: monospace;
+    font-size: 14px;
+    min-width: 100px;
+}
+
+.timeline-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.timeline-slider {
+    flex: 1;
+    height: 8px;
+    background: #404040;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+.speed-control {
+    background: #404040;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-slider {
+    width: 100px;
+    height: 6px;
+    background: #404040;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-value {
+    color: #ccc;
+    font-size: 12px;
+    min-width: 40px;
+}
+
+.player-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+
+.option-btn {
+    padding: 8px 15px;
+    background: #555;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.render-btn {
+    background: #28a745;
+    font-weight: bold;
+}
+
+/* 플레이어 모드일 때 캔버스 스타일 */
+.canvas-player-mode {
+    aspect-ratio: 9/16;
+    max-width: 300px;
+    max-height: 533px;
+    margin: 0 auto;
+    border: 2px solid #007bff;
+}
+
+/* 검색 결과 스타일 */
+.search-result-item {
+    display: flex;
+    margin: 5px 0;
+    padding: 5px;
+    background: #404040;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-result-item:hover {
+    background: #555;
+}
+
+.search-result-thumbnail {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 3px;
+    margin-right: 8px;
+}
+
+.search-result-info {
+    flex: 1;
+    color: white;
+    font-size: 11px;
+}
+
+.search-result-title {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.search-result-source {
+    color: #ccc;
+    font-size: 10px;
+}
+
+/* AI 모델 선택 스타일 */
+.model-selector {
+    margin-bottom: 8px;
+}
+
+.model-selector select {
+    width: 100%;
+    padding: 5px;
+    background: #555;
+    border: 1px solid #666;
+    color: white;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.model-selector label {
+    display: block;
+    color: #ccc;
+    font-size: 10px;
+    margin-bottom: 3px;
+}
+
+/* AI 생성 섹션 구분 */
+.ai-generation-section {
+    border: 1px solid #444;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.ai-section-header {
+    background: #3a3a3a;
+    padding: 8px 10px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    border-bottom: 1px solid #444;
+}
+
+.ai-section-content {
+    padding: 10px;
 }
