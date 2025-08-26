@@ -3,6 +3,8 @@
 
 // ========== 1. 탭 전환 시스템 ==========
 function switchEditorTab(tabName) {
+    console.log('탭 전환 시도:', tabName);
+    
     // 모든 탭 비활성화
     const tabs = document.querySelectorAll('.editor-tab');
     const contents = document.querySelectorAll('.editor-tab-content');
@@ -22,8 +24,17 @@ function switchEditorTab(tabName) {
         selectedTab.classList.add('active');
         selectedTab.style.backgroundColor = '#007bff';
         selectedTab.style.color = 'white';
+        console.log('탭 버튼 활성화:', selectedTab);
+    } else {
+        console.error('탭 버튼을 찾을 수 없음:', tabName);
     }
-    if (selectedContent) selectedContent.classList.add('active');
+    
+    if (selectedContent) {
+        selectedContent.classList.add('active');
+        console.log('탭 내용 활성화:', selectedContent);
+    } else {
+        console.error('탭 내용을 찾을 수 없음:', `${tabName}-tab`);
+    }
         
     // 선택된 요소가 있으면 편집 도구에 로드
     if (typeof selectedElement !== 'undefined' && selectedElement) {
@@ -36,11 +47,13 @@ function switchEditorTab(tabName) {
         }
     }
     
-    console.log('편집기 탭 전환:', tabName);
+    console.log('편집기 탭 전환 완료:', tabName);
 }
 
 // ========== 2. 요소 추가 함수들 ==========
 function addQuickText() {
+    console.log('텍스트 요소 추가 시작');
+    
     const canvas = document.getElementById('canvas');
     const textElement = document.createElement('div');
     
@@ -59,45 +72,52 @@ function addQuickText() {
     textElement.style.cursor = 'move';
     textElement.style.padding = '5px';
     textElement.style.border = '1px dashed transparent';
+    textElement.style.zIndex = '1000';
     
-    // 클릭 이벤트 - 요소 선택 및 탭 이동
-    textElement.onclick = function(e) {
+    // 클릭 이벤트 - 요소 선택 및 탭 이동 (수정됨)
+    textElement.addEventListener('click', function(e) {
         e.stopPropagation();
+        e.preventDefault();
         
-        // 직접 선택 처리
-        if (typeof window.selectedElement !== 'undefined') {
-            // 이전 선택 해제
-            if (window.selectedElement) {
-                window.selectedElement.style.border = '1px dashed transparent';
-            }
+        console.log('텍스트 요소 클릭됨:', this);
+        
+        // 이전 선택 해제
+        if (typeof window.selectedElement !== 'undefined' && window.selectedElement) {
+            window.selectedElement.style.border = '1px dashed transparent';
         }
         
         // 현재 요소 선택
         window.selectedElement = this;
         this.style.border = '2px solid #007bff';
         
+        console.log('텍스트 요소 선택 처리 완료');
+        
         // selectElement 함수가 있으면 호출
         if (typeof selectElement === 'function') {
             selectElement(this);
         }
         
+        // 탭 전환
+        console.log('텍스트 탭으로 전환 시도');
         switchEditorTab('text');
+        
+        // 편집기에 로드
         loadTextToEditor(this);
         
-        console.log('텍스트 요소 선택됨:', this);
-    };
+        console.log('텍스트 요소 선택 및 탭 전환 완료');
+    });
     
     // 텍스트 변경 시 동기화
     textElement.addEventListener('input', function() {
         const textContent = document.getElementById('text-content');
-        if (textContent && document.getElementById('text-tab').classList.contains('active')) {
+        if (textContent && document.getElementById('text-tab') && document.getElementById('text-tab').classList.contains('active')) {
             textContent.value = this.textContent || this.innerHTML;
         }
     });
 
     textElement.addEventListener('blur', function() {
         const textContent = document.getElementById('text-content');
-        if (textContent && document.getElementById('text-tab').classList.contains('active')) {
+        if (textContent && document.getElementById('text-tab') && document.getElementById('text-tab').classList.contains('active')) {
             textContent.value = this.textContent || this.innerHTML;
         }
     });
@@ -105,12 +125,21 @@ function addQuickText() {
     canvas.appendChild(textElement);
     
     // 텍스트 탭으로 이동 및 요소 선택
-    switchEditorTab('text');
+    console.log('새로 생성된 텍스트 요소를 선택하고 탭 전환');
+    
+    // 요소를 전역 선택 상태로 설정
+    window.selectedElement = textElement;
+    textElement.style.border = '2px solid #007bff';
+    
+    // selectElement 함수 호출
     if (typeof selectElement === 'function') {
         selectElement(textElement);
     }
     
-    console.log('텍스트 요소 추가 및 텍스트 탭으로 이동');
+    // 탭 전환
+    switchEditorTab('text');
+    
+    console.log('텍스트 요소 추가 및 텍스트 탭으로 이동 완료');
 }
 
 function addQuickImage() {
@@ -138,8 +167,10 @@ function addQuickImage() {
                 imgElement.style.border = '1px dashed transparent';
                 
                 // 클릭 이벤트 - 요소 선택 및 탭 이동
-                imgElement.onclick = function(e) {
+                imgElement.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    
+                    console.log('이미지 요소 클릭됨:', this);
                     
                     // 직접 선택 처리
                     if (typeof window.selectedElement !== 'undefined') {
@@ -158,15 +189,18 @@ function addQuickImage() {
                     loadImageToEditor(this);
                     
                     console.log('이미지 요소 선택됨:', this);
-                };
+                });
                 
                 canvas.appendChild(imgElement);
                 
                 // 이미지 탭으로 이동 및 요소 선택
-                switchEditorTab('image');
+                window.selectedElement = imgElement;
+                imgElement.style.border = '2px solid #007bff';
+                
                 if (typeof selectElement === 'function') {
                     selectElement(imgElement);
                 }
+                switchEditorTab('image');
                 
                 console.log('이미지 요소 추가 및 이미지 탭으로 이동');
             };
@@ -203,8 +237,10 @@ function addQuickShape(shapeType) {
     }
     
     // 클릭 이벤트 - 요소 선택 및 탭 이동
-    shapeElement.onclick = function(e) {
+    shapeElement.addEventListener('click', function(e) {
         e.stopPropagation();
+        
+        console.log('도형 요소 클릭됨:', this);
         
         // 직접 선택 처리
         if (typeof window.selectedElement !== 'undefined') {
@@ -223,15 +259,18 @@ function addQuickShape(shapeType) {
         loadShapeToEditor(this);
         
         console.log('도형 요소 선택됨:', this);
-    };
+    });
     
     canvas.appendChild(shapeElement);
     
     // 도형 탭으로 이동 및 요소 선택
-    switchEditorTab('shape');
+    window.selectedElement = shapeElement;
+    shapeElement.style.border = '2px solid #007bff';
+    
     if (typeof selectElement === 'function') {
         selectElement(shapeElement);
     }
+    switchEditorTab('shape');
     
     console.log(`${shapeType} 도형 추가 및 도형 탭으로 이동`);
 }
@@ -260,8 +299,10 @@ function addQuickVideo() {
             videoElement.style.border = '1px dashed transparent';
             
             // 클릭 이벤트 - 요소 선택 및 탭 이동
-            videoElement.onclick = function(e) {
+            videoElement.addEventListener('click', function(e) {
                 e.stopPropagation();
+                
+                console.log('비디오 요소 클릭됨:', this);
                 
                 // 직접 선택 처리
                 if (typeof window.selectedElement !== 'undefined') {
@@ -280,15 +321,18 @@ function addQuickVideo() {
                 loadVideoToEditor(this);
                 
                 console.log('비디오 요소 선택됨:', this);
-            };
+            });
             
             canvas.appendChild(videoElement);
             
             // 비디오 탭으로 이동 및 요소 선택
-            switchEditorTab('video');
+            window.selectedElement = videoElement;
+            videoElement.style.border = '2px solid #007bff';
+            
             if (typeof selectElement === 'function') {
                 selectElement(videoElement);
             }
+            switchEditorTab('video');
             
             console.log('동영상 요소 추가 및 동영상 탭으로 이동');
         }
@@ -320,8 +364,10 @@ function addQuickAudio() {
             audioElement.style.border = '1px dashed transparent';
             
             // 클릭 이벤트 - 요소 선택 및 탭 이동
-            audioElement.onclick = function(e) {
+            audioElement.addEventListener('click', function(e) {
                 e.stopPropagation();
+                
+                console.log('오디오 요소 클릭됨:', this);
                 
                 // 직접 선택 처리
                 if (typeof window.selectedElement !== 'undefined') {
@@ -340,15 +386,18 @@ function addQuickAudio() {
                 loadAudioToEditor(this);
                 
                 console.log('오디오 요소 선택됨:', this);
-            };
+            });
             
             canvas.appendChild(audioElement);
             
             // 오디오 탭으로 이동 및 요소 선택
-            switchEditorTab('audio');
+            window.selectedElement = audioElement;
+            audioElement.style.border = '2px solid #007bff';
+            
             if (typeof selectElement === 'function') {
                 selectElement(audioElement);
             }
+            switchEditorTab('audio');
             
             console.log('음성 요소 추가 및 음성 탭으로 이동');
         }
@@ -444,6 +493,8 @@ function updateTextPosition() {
 function loadTextToEditor(element) {
     if (!element || !element.classList.contains('canvas-text')) return;
     
+    console.log('텍스트 편집기에 로드 중:', element);
+    
     const textContent = document.getElementById('text-content');
     const textColor = document.getElementById('text-color');
     const textBgColor = document.getElementById('text-bg-color');
@@ -460,20 +511,25 @@ function loadTextToEditor(element) {
     if (textFontSize) {
         const fontSize = parseInt(element.style.fontSize) || 16;
         textFontSize.value = fontSize;
-        document.getElementById('text-font-size-value').textContent = fontSize + 'px';
+        const fontSizeValue = document.getElementById('text-font-size-value');
+        if (fontSizeValue) fontSizeValue.textContent = fontSize + 'px';
     }
     if (textWidth) {
         const width = parseInt(element.style.width) || 150;
         textWidth.value = width;
-        document.getElementById('text-width-value').textContent = width + 'px';
+        const widthValue = document.getElementById('text-width-value');
+        if (widthValue) widthValue.textContent = width + 'px';
     }
     if (textHeight) {
         const height = parseInt(element.style.height) || 50;
         textHeight.value = height;
-        document.getElementById('text-height-value').textContent = height + 'px';
+        const heightValue = document.getElementById('text-height-value');
+        if (heightValue) heightValue.textContent = height + 'px';
     }
     if (textX) textX.value = parseInt(element.style.left) || 0;
     if (textY) textY.value = parseInt(element.style.top) || 0;
+    
+    console.log('텍스트 편집기 로드 완료');
 }
 
 // ========== 4. 이미지 편집 함수들 ==========
