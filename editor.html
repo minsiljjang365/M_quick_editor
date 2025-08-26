@@ -5,257 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>편집 - 쇼츠 퀵에디터</title>
     <link rel="stylesheet" href="css/editor.css">
-    <style>
-        /* 캔버스 영역 내부만 위아래 배치 */
-        #canvas-area {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* 플레이어 모드 전환 버튼 스타일 */
-        .mode-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #2a2a2a;
-            border-radius: 8px;
-        }
-        
-        .mode-btn {
-            padding: 10px 20px;
-            border: 2px solid #555;
-            background: #404040;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .mode-btn:hover {
-            background: #555;
-            border-color: #007bff;
-        }
-        
-        .mode-btn.active {
-            background: #007bff;
-            border-color: #0056b3;
-            color: white;
-        }
-        
-        /* 플레이어 컨트롤 스타일 */
-        .player-controls {
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            padding: 20px;
-            background: #2a2a2a;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .control-bar {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .play-btn {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 50%;
-            background: #007bff;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .stop-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 6px;
-            background: #dc3545;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .time-display {
-            color: white;
-            font-family: monospace;
-            font-size: 14px;
-            min-width: 100px;
-        }
-        
-        .timeline-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .timeline-slider {
-            flex: 1;
-            height: 8px;
-            background: #404040;
-            border-radius: 4px;
-            outline: none;
-            cursor: pointer;
-        }
-        
-        .speed-control {
-            background: #404040;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px;
-            cursor: pointer;
-        }
-        
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .volume-slider {
-            width: 100px;
-            height: 6px;
-            background: #404040;
-            border-radius: 3px;
-            outline: none;
-            cursor: pointer;
-        }
-        
-        .volume-value {
-            color: #ccc;
-            font-size: 12px;
-            min-width: 40px;
-        }
-        
-        .player-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #444;
-        }
-        
-        .option-btn {
-            padding: 8px 15px;
-            background: #555;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .render-btn {
-            background: #28a745;
-            font-weight: bold;
-        }
-        
-        /* 플레이어 모드일 때 캔버스 스타일 */
-        .canvas-player-mode {
-            aspect-ratio: 9/16;
-            max-width: 300px;
-            max-height: 533px;
-            margin: 0 auto;
-            border: 2px solid #007bff;
-        }
-
-        /* 검색 결과 스타일 */
-        .search-result-item {
-            display: flex;
-            margin: 5px 0;
-            padding: 5px;
-            background: #404040;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .search-result-item:hover {
-            background: #555;
-        }
-        
-        .search-result-thumbnail {
-            width: 60px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 3px;
-            margin-right: 8px;
-        }
-        
-        .search-result-info {
-            flex: 1;
-            color: white;
-            font-size: 11px;
-        }
-        
-        .search-result-title {
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-        
-        .search-result-source {
-            color: #ccc;
-            font-size: 10px;
-        }
-
-        /* AI 모델 선택 스타일 */
-        .model-selector {
-            margin-bottom: 8px;
-        }
-        
-        .model-selector select {
-            width: 100%;
-            padding: 5px;
-            background: #555;
-            border: 1px solid #666;
-            color: white;
-            border-radius: 3px;
-            font-size: 11px;
-        }
-        
-        .model-selector label {
-            display: block;
-            color: #ccc;
-            font-size: 10px;
-            margin-bottom: 3px;
-        }
-
-        /* AI 생성 섹션 구분 */
-        .ai-generation-section {
-            border: 1px solid #444;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-        
-        .ai-section-header {
-            background: #3a3a3a;
-            padding: 8px 10px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 12px;
-            border-bottom: 1px solid #444;
-        }
-        
-        .ai-section-content {
-            padding: 10px;
-        }
-    </style>
 </head>
 <body>
-    <!-- 상단 네비게이션 -->
+    <!-- 상단 내비게이션 -->
     <div id="navbar">
         <button onclick="goHome()">🏠 홈</button>
         <button onclick="openAdmin()">⚙️ 관리자</button>
@@ -323,63 +75,65 @@
         <!-- PPT 편집기 -->
         <div id="ppt-editor">
             <div id="ppt-header">🎨 편집 도구</div>
+            
+            <!-- 편집기 탭 -->
+            <div id="editor-tabs">
+                <button class="editor-tab active" onclick="switchEditorTab('basic')">기본</button>
+                <button class="editor-tab" onclick="switchEditorTab('text')">텍스트</button>
+                <button class="editor-tab" onclick="switchEditorTab('image')">이미지</button>
+                <button class="editor-tab" onclick="switchEditorTab('shape')">도형</button>
+                <button class="editor-tab" onclick="switchEditorTab('video')">동영상</button>
+                <button class="editor-tab" onclick="switchEditorTab('audio')">음성</button>
+            </div>
+            
             <div id="ppt-content">
-                
-                <!-- 기본 도구들 (항상 표시) -->
-                <div class="ppt-section">
-                    <h4>빠른 추가</h4>
-                    <div class="button-group">
-                        <button onclick="addQuickText()">📝 텍스트</button>
-                        <button onclick="addQuickImage()">🖼️ 이미지</button>
+                <!-- 기본 탭 -->
+                <div id="basic-tab" class="editor-tab-content active">
+                    <div class="ppt-section">
+                        <h4>빠른 추가</h4>
+                        <div class="button-group">
+                            <button onclick="addQuickText()">📝 텍스트</button>
+                            <button onclick="addQuickImage()">🖼️ 이미지</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="addQuickShape('circle')">⭕ 원</button>
+                            <button onclick="addQuickShape('rectangle')">⬜ 사각형</button>
+                        </div>
                     </div>
-                    <div class="button-group" style="margin-top: 5px;">
-                        <button onclick="addQuickShape('circle')">⭕ 원</button>
-                        <button onclick="addQuickShape('rectangle')">⬜ 사각형</button>
+
+                    <div class="ppt-section">
+                        <h4>배경</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;">
+                            <button onclick="changeBackground('#000000')" style="background: #000; color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">⚫</button>
+                            <button onclick="changeBackground('#ffffff')" style="background: #fff; color: #000; padding: 8px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⚪</button>
+                            <button onclick="changeBackground('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">🌅</button>
+                            <button onclick="changeBackground('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">🌺</button>
+                        </div>
+                        <div class="ppt-control">
+                            <label>커스텀 색상</label>
+                            <input type="color" id="bg-color" onchange="changeBackground(this.value)" value="#667eea">
+                        </div>
+                    </div>
+
+                    <div class="ppt-section">
+                        <h4>캔버스 설정</h4>
+                        <div class="button-group">
+                            <button onclick="clearCanvas()">🗑️ 전체삭제</button>
+                            <button onclick="resetCanvas()">↩️ 초기화</button>
+                        </div>
+                        <div class="ppt-control" style="margin-top: 10px;">
+                            <label>확대/축소</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button onclick="zoomOut()" style="padding: 5px 10px; background: #555; border: none; color: white; border-radius: 3px; cursor: pointer;">➖</button>
+                                <span id="zoom-level" style="color: #ccc; min-width: 50px; text-align: center;">100%</span>
+                                <button onclick="zoomIn()" style="padding: 5px 10px; background: #555; border: none; color: white; border-radius: 3px; cursor: pointer;">➕</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="ppt-section">
-                    <h4>배경</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;">
-                        <button onclick="changeBackground('#000000')" style="background: #000; color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">⚫</button>
-                        <button onclick="changeBackground('#ffffff')" style="background: #fff; color: #000; padding: 8px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">⚪</button>
-                        <button onclick="changeBackground('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">🌅</button>
-                        <button onclick="changeBackground('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 8px; border: none; border-radius: 4px; cursor: pointer;">🌺</button>
-                    </div>
-                    <div class="ppt-control">
-                        <label>커스텀 색상</label>
-                        <input type="color" id="bg-color" onchange="changeBackground(this.value)" value="#667eea">
-                    </div>
-                </div>
-
-                <div class="ppt-section">
-                    <h4>레이어 관리</h4>
-                    <div class="button-group">
-                        <button onclick="bringToFront()">🔤 맨앞으로</button>
-                        <button onclick="sendToBack()">🔥 맨뒤로</button>
-                    </div>
-                    <div class="button-group" style="margin-top: 5px;">
-                        <button onclick="moveForward()">⬆️ 앞으로</button>
-                        <button onclick="moveBackward()">⬇️ 뒤로</button>
-                    </div>
-                </div>
-
-                <div class="ppt-section">
-                    <h4>정렬</h4>
-                    <div class="button-group">
-                        <button onclick="alignLeft()">⬅️ 왼쪽</button>
-                        <button onclick="alignCenter()">↔️ 가운데</button>
-                        <button onclick="alignRight()">➡️ 오른쪽</button>
-                    </div>
-                    <div class="button-group" style="margin-top: 5px;">
-                        <button onclick="alignTop()">⬆️ 위</button>
-                        <button onclick="alignMiddle()">↕️ 중간</button>
-                        <button onclick="alignBottom()">⬇️ 아래</button>
-                    </div>
-                </div>
-
-                <!-- 텍스트 편집 (선택시 표시) -->
-                <div id="text-editor" style="display: none;">
+                <!-- 텍스트 탭 -->
+                <div id="text-tab" class="editor-tab-content">
                     <div class="ppt-section">
                         <h4>📝 텍스트 편집</h4>
                         <div class="ppt-control">
@@ -397,7 +151,6 @@
                             </div>
                         </div>
                         
-                        <!-- 🔥 새로 추가: 텍스트 박스 크기 조절 -->
                         <div class="ppt-control">
                             <label>텍스트 박스 너비</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -434,7 +187,6 @@
                             <button id="text-underline-btn" onclick="toggleTextUnderline()">U</button>
                         </div>
                         
-                        <!-- 🔥 새로 추가: 텍스트 위치 조정 -->
                         <div class="ppt-control">
                             <label>위치 조정</label>
                             <div style="display: flex; gap: 10px;">
@@ -453,10 +205,38 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- 레이어 관리 (텍스트용) -->
+                    <div class="ppt-section">
+                        <h4>레이어 관리</h4>
+                        <div class="button-group">
+                            <button onclick="bringToFront()">🔼 맨앞으로</button>
+                            <button onclick="sendToBack()">🔽 맨뒤로</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="moveForward()">⬆️ 앞으로</button>
+                            <button onclick="moveBackward()">⬇️ 뒤로</button>
+                        </div>
+                    </div>
+
+                    <!-- 정렬 도구 (텍스트용) -->
+                    <div class="ppt-section">
+                        <h4>정렬</h4>
+                        <div class="button-group">
+                            <button onclick="alignLeft()">⬅️ 왼쪽</button>
+                            <button onclick="alignCenter()">↔️ 가운데</button>
+                            <button onclick="alignRight()">➡️ 오른쪽</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="alignTop()">⬆️ 위</button>
+                            <button onclick="alignMiddle()">↕️ 중간</button>
+                            <button onclick="alignBottom()">⬇️ 아래</button>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- 이미지 편집 (선택시 표시) -->
-                <div id="image-editor" style="display: none;">
+
+                <!-- 이미지 탭 -->
+                <div id="image-tab" class="editor-tab-content">
                     <div class="ppt-section">
                         <h4>🖼️ 이미지 편집</h4>
                         <div class="ppt-control">
@@ -480,7 +260,6 @@
                             <button onclick="resetImageSize()">↩️ 원래크기</button>
                         </div>
                         
-                        <!-- 이미지 위치 조정 -->
                         <div class="ppt-control">
                             <label>위치 조정</label>
                             <div style="display: flex; gap: 10px;">
@@ -539,14 +318,41 @@
                             <button onclick="applyImageFilter('blur')">🌫️ 블러</button>
                         </div>
                     </div>
+                    
+                    <!-- 레이어 관리 (이미지용) -->
+                    <div class="ppt-section">
+                        <h4>레이어 관리</h4>
+                        <div class="button-group">
+                            <button onclick="bringToFront()">🔼 맨앞으로</button>
+                            <button onclick="sendToBack()">🔽 맨뒤로</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="moveForward()">⬆️ 앞으로</button>
+                            <button onclick="moveBackward()">⬇️ 뒤로</button>
+                        </div>
+                    </div>
+
+                    <!-- 정렬 도구 (이미지용) -->
+                    <div class="ppt-section">
+                        <h4>정렬</h4>
+                        <div class="button-group">
+                            <button onclick="alignLeft()">⬅️ 왼쪽</button>
+                            <button onclick="alignCenter()">↔️ 가운데</button>
+                            <button onclick="alignRight()">➡️ 오른쪽</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="alignTop()">⬆️ 위</button>
+                            <button onclick="alignMiddle()">↕️ 중간</button>
+                            <button onclick="alignBottom()">⬇️ 아래</button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 🔥 새로 추가: 도형 편집 (선택시 표시) -->
-                <div id="shape-editor" style="display: none;">
+                <!-- 도형 탭 -->
+                <div id="shape-tab" class="editor-tab-content">
                     <div class="ppt-section">
                         <h4>🔺 도형 편집</h4>
                         
-                        <!-- 도형 크기 조절 -->
                         <div class="ppt-control">
                             <label>도형 너비</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -570,7 +376,6 @@
                             <button onclick="resetShapeSize()">↩️ 원래크기</button>
                         </div>
                         
-                        <!-- 도형 위치 조정 -->
                         <div class="ppt-control">
                             <label>위치 조정</label>
                             <div style="display: flex; gap: 10px;">
@@ -636,36 +441,159 @@
                             <button onclick="rotateShape(-90)">↺ -90° 회전</button>
                         </div>
                     </div>
-                </div>
-
-                <!-- 선택된 요소 공통 도구 -->
-                <div id="selected-tools" style="display: none;">
+                    
+                    <!-- 레이어 관리 (도형용) -->
                     <div class="ppt-section">
-                        <h4>🎯 선택된 요소</h4>
+                        <h4>레이어 관리</h4>
                         <div class="button-group">
-                            <button onclick="copySelectedElement()">📋 복사</button>
-                            <button onclick="duplicateElement()">🔄 복제</button>
+                            <button onclick="bringToFront()">🔼 맨앞으로</button>
+                            <button onclick="sendToBack()">🔽 맨뒤로</button>
                         </div>
                         <div class="button-group" style="margin-top: 5px;">
-                            <button onclick="groupElements()">🔗 그룹</button>
-                            <button onclick="deleteSelectedElement()">🗑️ 삭제</button>
+                            <button onclick="moveForward()">⬆️ 앞으로</button>
+                            <button onclick="moveBackward()">⬇️ 뒤로</button>
+                        </div>
+                    </div>
+
+                    <!-- 정렬 도구 (도형용) -->
+                    <div class="ppt-section">
+                        <h4>정렬</h4>
+                        <div class="button-group">
+                            <button onclick="alignLeft()">⬅️ 왼쪽</button>
+                            <button onclick="alignCenter()">↔️ 가운데</button>
+                            <button onclick="alignRight()">➡️ 오른쪽</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="alignTop()">⬆️ 위</button>
+                            <button onclick="alignMiddle()">↕️ 중간</button>
+                            <button onclick="alignBottom()">⬇️ 아래</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 전체 캔버스 도구 -->
-                <div class="ppt-section">
-                    <h4>캔버스 설정</h4>
-                    <div class="button-group">
-                        <button onclick="clearCanvas()">🗑️ 전체삭제</button>
-                        <button onclick="resetCanvas()">↩️ 초기화</button>
+                <!-- 동영상 탭 -->
+                <div id="video-tab" class="editor-tab-content">
+                    <div class="ppt-section">
+                        <h4>🎬 동영상 편집</h4>
+                        <div class="ppt-control">
+                            <label>동영상 크기</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="video-scale" min="50" max="200" value="100" 
+                                       oninput="updateVideoScale(this.value)" style="flex: 1;">
+                                <span id="video-scale-value" style="min-width: 50px; color: #ccc;">100%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>재생 속도</label>
+                            <select id="video-speed" onchange="updateVideoSpeed(this.value)" style="width: 100%; padding: 8px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                <option value="0.5">0.5배속</option>
+                                <option value="1" selected>1.0배속</option>
+                                <option value="1.5">1.5배속</option>
+                                <option value="2">2.0배속</option>
+                            </select>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button onclick="muteVideo()">🔇 음소거</button>
+                            <button onclick="loopVideo()">🔄 반복재생</button>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>동영상 위치</label>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">X</label>
+                                    <input type="number" id="video-x" min="0" max="300" 
+                                           onchange="updateVideoPosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">Y</label>
+                                    <input type="number" id="video-y" min="0" max="500" 
+                                           onchange="updateVideoPosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ppt-control" style="margin-top: 10px;">
-                        <label>확대/축소</label>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button onclick="zoomOut()" style="padding: 5px 10px; background: #555; border: none; color: white; border-radius: 3px; cursor: pointer;">➖</button>
-                            <span id="zoom-level" style="color: #ccc; min-width: 50px; text-align: center;">100%</span>
-                            <button onclick="zoomIn()" style="padding: 5px 10px; background: #555; border: none; color: white; border-radius: 3px; cursor: pointer;">➕</button>
+                    
+                    <!-- 레이어 관리 (동영상용) -->
+                    <div class="ppt-section">
+                        <h4>레이어 관리</h4>
+                        <div class="button-group">
+                            <button onclick="bringToFront()">🔼 맨앞으로</button>
+                            <button onclick="sendToBack()">🔽 맨뒤로</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="moveForward()">⬆️ 앞으로</button>
+                            <button onclick="moveBackward()">⬇️ 뒤로</button>
+                        </div>
+                    </div>
+
+                    <!-- 정렬 도구 (동영상용) -->
+                    <div class="ppt-section">
+                        <h4>정렬</h4>
+                        <div class="button-group">
+                            <button onclick="alignLeft()">⬅️ 왼쪽</button>
+                            <button onclick="alignCenter()">↔️ 가운데</button>
+                            <button onclick="alignRight()">➡️ 오른쪽</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="alignTop()">⬆️ 위</button>
+                            <button onclick="alignMiddle()">↕️ 중간</button>
+                            <button onclick="alignBottom()">⬇️ 아래</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 음성 탭 -->
+                <div id="audio-tab" class="editor-tab-content">
+                    <div class="ppt-section">
+                        <h4>🎵 음성 편집</h4>
+                        <div class="ppt-control">
+                            <label>음량</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="audio-volume" min="0" max="100" value="80" 
+                                       oninput="updateAudioVolume(this.value)" style="flex: 1;">
+                                <span id="audio-volume-value" style="min-width: 40px; color: #ccc;">80%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>페이드 효과</label>
+                            <div class="button-group">
+                                <button onclick="applyFadeIn()">📈 페이드인</button>
+                                <button onclick="applyFadeOut()">📉 페이드아웃</button>
+                            </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>오디오 필터</label>
+                            <select id="audio-filter" onchange="applyAudioFilter(this.value)" style="width: 100%; padding: 8px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                <option value="none">필터 없음</option>
+                                <option value="reverb">리버브</option>
+                                <option value="echo">에코</option>
+                                <option value="bass">저음 강화</option>
+                            </select>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button onclick="muteAudio()">🔇 음소거</button>
+                            <button onclick="soloAudio()">🎧 솔로</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 레이어 관리 (음성용) -->
+                    <div class="ppt-section">
+                        <h4>레이어 관리</h4>
+                        <div class="button-group">
+                            <button onclick="bringToFront()">🔼 맨앞으로</button>
+                            <button onclick="sendToBack()">🔽 맨뒤로</button>
+                        </div>
+                        <div class="button-group" style="margin-top: 5px;">
+                            <button onclick="moveForward()">⬆️ 앞으로</button>
+                            <button onclick="moveBackward()">⬇️ 뒤로</button>
                         </div>
                     </div>
                 </div>
@@ -714,7 +642,7 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">🎙️ 나레이션</div>
+                        <div class="source-item-title">🎙️ 내레이션</div>
                         <div class="source-item-desc">음성 대본</div>
                         <div class="button-group">
                             <button onclick="showNarrationEditor('manual')">직접작성</button>
@@ -750,7 +678,26 @@
     <script src="js/init.js"></script>
     
     <script>
-        // ========== 🔥 텍스트 크기 조절 함수들 (새로 추가) ==========
+        // ========== 탭 전환 함수 ==========
+        function switchEditorTab(tabName) {
+            // 모든 탭 비활성화
+            const tabs = document.querySelectorAll('.editor-tab');
+            const contents = document.querySelectorAll('.editor-tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // 선택된 탭 활성화
+            const selectedTab = document.querySelector(`[onclick="switchEditorTab('${tabName}')"]`);
+            const selectedContent = document.getElementById(`${tabName}-tab`);
+            
+            if (selectedTab) selectedTab.classList.add('active');
+            if (selectedContent) selectedContent.classList.add('active');
+            
+            console.log('편집기 탭 전환:', tabName);
+        }
+        
+        // ========== 텍스트 크기 조절 함수들 (새로 추가) ==========
         function updateTextWidth(width) {
             if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
             
@@ -796,7 +743,7 @@
             saveCanvasState();
         }
         
-        // ========== 🔥 이미지 위치 조절 함수 (새로 추가) ==========
+        // ========== 이미지 위치 조절 함수 (새로 추가) ==========
         function updateImageWidth(width) {
             if (!selectedElement || !selectedElement.classList.contains('canvas-image')) return;
             
@@ -842,7 +789,7 @@
             saveCanvasState();
         }
         
-        // ========== 🔥 도형 크기/위치 조절 함수들 (새로 추가) ==========
+        // ========== 도형 크기/위치 조절 함수들 (새로 추가) ==========
         function updateShapeWidth(width) {
             if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
             
@@ -1293,7 +1240,7 @@
         
         // ========== 템플릿 및 기타 로드 ==========
         
-        // 미디어 패널 로드 (🔥 새로 추가)
+        // 미디어 패널 로드
         fetch('templates/media-panel.html')
             .then(response => response.text())
             .then(html => {
@@ -1310,17 +1257,6 @@
                 console.log('🎵 오디오 패널 로드 완료');
             })
             .catch(error => console.error('오디오 패널 로드 실패:', error));
-
-        // 텍스트 편집기 로드
-        fetch('templates/text-editor.html')
-            .then(response => response.text())
-            .then(html => {
-                const pptContent = document.getElementById('ppt-content');
-                if (pptContent) {
-                    pptContent.insertAdjacentHTML('beforeend', html);
-                }
-            })
-            .catch(error => console.error('텍스트 편집기 로드 실패:', error));
 
         // 템플릿 패널 로드
         fetch('templates/template-panel.html')
@@ -1379,46 +1315,6 @@
                 });
                 
                 console.log(`📂 프로젝트 불러오기 완료: ${projectData.elements.length}개 요소`);
-                
-                // 캔버스 상태도 함께 복원
-                const canvasState = localStorage.getItem('canvas_state');
-                if (canvasState) {
-                    try {
-                        const parsed = JSON.parse(canvasState);
-                        parsed.elements.forEach(elementData => {
-                            if (elementData.type === 'background-template') {
-                                const bgElement = document.createElement('img');
-                                bgElement.className = elementData.className;
-                                bgElement.id = elementData.id;
-                                bgElement.src = elementData.content;
-                                bgElement.alt = elementData.attributes.alt || 'Background Template';
-                                
-                                // 배경 템플릿 고정 스타일
-                                bgElement.style.cssText = `
-                                    position: absolute;
-                                    left: 0px;
-                                    top: 0px;
-                                    width: 100%;
-                                    height: 100%;
-                                    object-fit: cover;
-                                    z-index: 3;
-                                    pointer-events: none;
-                                `;
-                                
-                                // 이미지 로드 실패시 제거
-                                bgElement.onerror = function() {
-                                    console.log('템플릿 이미지 로드 실패 - 요소 제거');
-                                    this.remove();
-                                };
-                                
-                                canvas.insertBefore(bgElement, canvas.firstChild);
-                            }
-                        });
-                    } catch (error) {
-                        console.error('캔버스 상태 복원 중 오류:', error);
-                    }
-                }
-                
                 return true;
             }
             return false;
@@ -1426,7 +1322,7 @@
         
         // 페이지 로드 완료 시 초기화 및 자동 불러오기
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장, 크기 조절 기능 추가, AI 모델 선택 UI 포함, 오디오 패널 분리, 미디어 패널 분리');
+            console.log('🎬 편집기 로드 완료 - 탭 시스템 적용, 플레이어 기능 내장, 크기 조절 기능 추가');
             
             // 저장된 프로젝트 자동 불러오기
             if (loadProject()) {
