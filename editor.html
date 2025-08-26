@@ -702,6 +702,22 @@
                 </div>
                 
                 <!-- 텍스트 소스 -->
+                <div id="text-sources" class="source-section">
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="제목 텍스트">
+                        <div class="source-item-title">📝 제목</div>
+                        <div class="source-item-desc">메인 제목용 텍스트</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="설명 텍스트">
+                        <div class="source-item-title">💬 설명</div>
+                        <div class="source-item-desc">부제목이나 설명용</div>
+                    </div>
+                    
+                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="text" data-content="클릭하세요!">
+                        <div class="source-item-title">🎯 CTA</div>
+                        <div class="source-item-desc">행동 유도 메시지</div>
+                    </div>
+                    
                     <div class="source-item">
                         <div class="source-item-title">📜 대본 작성</div>
                         <div class="source-item-desc">동영상 대본</div>
@@ -748,50 +764,6 @@
     <script src="js/init.js"></script>
     
     <script>
-// 전역 변수 선언
-let selectedElement = null;
-window.selectedElement = null;
-
-// 요소 선택 함수
-function selectElement(element) {
-    // 기존 선택 해제
-    const prevSelected = document.querySelector('.canvas-element.selected');
-    if (prevSelected) {
-        prevSelected.classList.remove('selected');
-        prevSelected.style.border = '';
-    }
-    
-    // 새 요소 선택
-    selectedElement = element;
-    window.selectedElement = element;
-    
-    if (element) {
-        element.classList.add('selected');
-        element.style.border = '2px solid #007bff';
-        
-        // 해당 탭으로 자동 전환
-        if (element.classList.contains('canvas-text')) {
-            switchEditorTab('text');
-        } else if (element.classList.contains('canvas-image')) {
-            switchEditorTab('image');
-        } else if (element.classList.contains('canvas-shape')) {
-            switchEditorTab('shape');
-        } else if (element.classList.contains('canvas-video')) {
-            switchEditorTab('video');
-        } else if (element.classList.contains('canvas-audio')) {
-            switchEditorTab('audio');
-        }
-        
-        console.log('요소 선택됨:', element.className);
-    }
-}
-
-// 캔버스 클릭시 선택 해제
-document.getElementById('canvas').onclick = function(e) {
-    if (e.target.id === 'canvas') {
-        selectElement(null);
-    }
-};
         // ========== 탭 전환 함수 ==========
 function switchEditorTab(tabName) {
     // 모든 탭 비활성화
@@ -1048,11 +1020,12 @@ textElement.addEventListener('blur', function() {
                         imgElement.style.width = '100px';
                         imgElement.style.height = 'auto';
                         imgElement.style.cursor = 'move';
-// 드래그 기능 추가
+// 드래그 기능을 위한 이벤트 처리
 let isDragging = false;
 let startX, startY, initialX, initialY;
 
 imgElement.addEventListener('mousedown', function(e) {
+    // Ctrl 키를 누를 때만 드래그 시작
     if (e.ctrlKey) {
         isDragging = true;
         startX = e.clientX;
@@ -1122,7 +1095,7 @@ imgElement.onclick = function() {
             } else if (shapeType === 'rectangle') {
                 shapeElement.style.backgroundColor = '#667eea';
             }
-// 드래그 기능 추가
+            // 드래그 기능 추가
 let isDragging = false;
 let startX, startY, initialX, initialY;
 
@@ -1153,7 +1126,6 @@ document.addEventListener('mouseup', function() {
         shapeElement.style.cursor = 'move';
     }
 });
-            
 shapeElement.onclick = function() {
     selectElement(this);
     switchEditorTab('shape'); // 이 줄 추가
@@ -1554,48 +1526,38 @@ document.addEventListener('mouseup', function() {
             window.open('admin.html', '_blank');
         }
         
-function saveProject() {
-    // 프로젝트 이름 입력 받기
-    let projectName = document.getElementById('project-title').textContent;
-    if (projectName === '프로젝트: 테스트 프로젝트' || projectName === '프로젝트: ') {
-        projectName = prompt('프로젝트 이름을 입력하세요:', '새 프로젝트');
-        if (!projectName) return;
-        document.getElementById('project-title').textContent = '프로젝트: ' + projectName;
-    }
-    
-    // 현재 프로젝트 상태 저장
-    const projectData = {
-        name: projectName,
-        canvas: document.getElementById('canvas').innerHTML,
-        timestamp: new Date().toISOString(),
-        elements: []
-    };
-    
-    // 캔버스 요소들 수집
-    const elements = document.querySelectorAll('.canvas-element');
-    elements.forEach((element, index) => {
-        projectData.elements.push({
-            id: element.id,
-            type: element.classList.contains('canvas-text') ? 'text' : 
-                  element.classList.contains('canvas-image') ? 'image' : 
-                  element.classList.contains('canvas-shape') ? 'shape' : 
-                  element.classList.contains('canvas-video') ? 'video' :
-                  element.classList.contains('canvas-audio') ? 'audio' : 'unknown',
-            style: element.style.cssText,
-            content: element.innerHTML || element.src,
-            position: {
-                left: element.style.left,
-                top: element.style.top
-            }
-        });
-    });
-    
-    // localStorage에 저장
-    localStorage.setItem('currentProject', JSON.stringify(projectData));
-    
-    alert(`프로젝트 "${projectName}"이 저장되었습니다!\n\n저장 시간: ` + new Date().toLocaleString());
-    console.log('프로젝트 저장 완료:', projectData);
-}
+        function saveProject() {
+            // 현재 프로젝트 상태 저장
+            const projectData = {
+                name: document.getElementById('project-title').textContent,
+                canvas: document.getElementById('canvas').innerHTML,
+                timestamp: new Date().toISOString(),
+                elements: []
+            };
+            
+            // 캔버스 요소들 수집
+            const elements = document.querySelectorAll('.canvas-element');
+            elements.forEach((element, index) => {
+                projectData.elements.push({
+                    id: element.id,
+                    type: element.classList.contains('canvas-text') ? 'text' : 
+                          element.classList.contains('canvas-image') ? 'image' : 
+                          element.classList.contains('canvas-shape') ? 'shape' : 'unknown',
+                    style: element.style.cssText,
+                    content: element.innerHTML || element.src,
+                    position: {
+                        left: element.style.left,
+                        top: element.style.top
+                    }
+                });
+            });
+            
+            // localStorage에 저장
+            localStorage.setItem('currentProject', JSON.stringify(projectData));
+            
+            alert('✅ 프로젝트가 저장되었습니다!\n\n저장 시간: ' + new Date().toLocaleString());
+            console.log('💾 프로젝트 저장 완료:', projectData);
+        }
 
         // ========== 플레이어 기능 ==========
         let currentMode = 'edit';
@@ -1908,7 +1870,7 @@ function saveProject() {
                 const projectData = JSON.parse(saved);
                 
                 // 프로젝트 제목 복원
-                document.getElementById('project-title').textContent = '프로젝트: ' + projectData.name;
+                document.getElementById('project-title').textContent = projectData.name;
                 
                 // 캔버스 초기화
                 const canvas = document.getElementById('canvas');
