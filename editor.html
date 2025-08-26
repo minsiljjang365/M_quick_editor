@@ -764,8 +764,46 @@
     <script src="js/init.js"></script>
     
     <script>
+<script>
+        // 전역 변수
+        let selectedElement = null;
+        let dragState = {
+            isDragging: false,
+            element: null,
+            startX: 0,
+            startY: 0,
+            initialX: 0,
+            initialY: 0
+        };
+
+        // 요소 선택 함수
+        function selectElement(element) {
+            selectedElement = element;
+            console.log('요소 선택:', element.className);
+        }
+
+        // 전역 드래그 이벤트 (한 번만 추가)
+        document.addEventListener('mousemove', function(e) {
+            if (dragState.isDragging && dragState.element) {
+                const deltaX = e.clientX - dragState.startX;
+                const deltaY = e.clientY - dragState.startY;
+                dragState.element.style.left = (dragState.initialX + deltaX) + 'px';
+                dragState.element.style.top = (dragState.initialY + deltaY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (dragState.isDragging) {
+                dragState.isDragging = false;
+                if (dragState.element) {
+                    dragState.element.style.cursor = 'move';
+                }
+                dragState.element = null;
+            }
+        });
+
         // ========== 탭 전환 함수 ==========
-function switchEditorTab(tabName) {
+        function switchEditorTab(tabName) {
     // 모든 탭 비활성화
     const tabs = document.querySelectorAll('.editor-tab');
     const contents = document.querySelectorAll('.editor-tab-content');
@@ -937,17 +975,16 @@ function switchEditorTab(tabName) {
             let startX, startY, initialX, initialY;
             
             textElement.addEventListener('mousedown', function(e) {
-                // 텍스트 편집 중이 아닐 때만 드래그 시작
-                if (!this.isContentEditable || e.ctrlKey) {
-                    isDragging = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    initialX = parseInt(this.style.left) || 0;
-                    initialY = parseInt(this.style.top) || 0;
-                    this.style.cursor = 'grabbing';
-                    e.preventDefault();
-                }
-            });
+    if (!window.getSelection().toString()) {
+        dragState.isDragging = true;
+        dragState.element = this;
+        dragState.startX = e.clientX;
+        dragState.startY = e.clientY;
+        dragState.initialX = parseInt(this.style.left) || 0;
+        dragState.initialY = parseInt(this.style.top) || 0;
+        this.style.cursor = 'grabbing';
+    }
+});
             
             document.addEventListener('mousemove', function(e) {
                 if (isDragging && textElement) {
@@ -1020,9 +1057,20 @@ textElement.addEventListener('blur', function() {
                         imgElement.style.width = '100px';
                         imgElement.style.height = 'auto';
                         imgElement.style.cursor = 'move';
+
+imgElement.addEventListener('mousedown', function(e) {
+    dragState.isDragging = true;
+    dragState.element = this;
+    dragState.startX = e.clientX;
+    dragState.startY = e.clientY;
+    dragState.initialX = parseInt(this.style.left) || 0;
+    dragState.initialY = parseInt(this.style.top) || 0;
+    this.style.cursor = 'grabbing';
+});
+
 imgElement.onclick = function() {
     selectElement(this);
-    switchEditorTab('image'); // 이 줄 추가
+    switchEditorTab('image');
 };
                         
                         canvas.appendChild(imgElement);
@@ -1063,7 +1111,16 @@ imgElement.onclick = function() {
             } else if (shapeType === 'rectangle') {
                 shapeElement.style.backgroundColor = '#667eea';
             }
-            
+            shapeElement.addEventListener('mousedown', function(e) {
+    dragState.isDragging = true;
+    dragState.element = this;
+    dragState.startX = e.clientX;
+    dragState.startY = e.clientY;
+    dragState.initialX = parseInt(this.style.left) || 0;
+    dragState.initialY = parseInt(this.style.top) || 0;
+    this.style.cursor = 'grabbing';
+});
+
 shapeElement.onclick = function() {
     selectElement(this);
     switchEditorTab('shape'); // 이 줄 추가
@@ -1103,6 +1160,15 @@ shapeElement.onclick = function() {
                     videoElement.style.width = '120px';
                     videoElement.style.height = 'auto';
                     videoElement.style.cursor = 'move';
+videoElement.addEventListener('mousedown', function(e) {
+    dragState.isDragging = true;
+    dragState.element = this;
+    dragState.startX = e.clientX;
+    dragState.startY = e.clientY;
+    dragState.initialX = parseInt(this.style.left) || 0;
+    dragState.initialY = parseInt(this.style.top) || 0;
+    this.style.cursor = 'grabbing';
+});
                     videoElement.onclick = function() {
     selectElement(this);
     switchEditorTab('video'); // 이 줄 추가
@@ -1146,6 +1212,15 @@ shapeElement.onclick = function() {
                     audioElement.style.top = '250px';
                     audioElement.style.width = '200px';
                     audioElement.style.cursor = 'move';
+audioElement.addEventListener('mousedown', function(e) {
+    dragState.isDragging = true;
+    dragState.element = this;
+    dragState.startX = e.clientX;
+    dragState.startY = e.clientY;
+    dragState.initialX = parseInt(this.style.left) || 0;
+    dragState.initialY = parseInt(this.style.top) || 0;
+    this.style.cursor = 'grabbing';
+});
                     audioElement.onclick = function() {
     selectElement(this);
     switchEditorTab('audio'); // 이 줄 추가
