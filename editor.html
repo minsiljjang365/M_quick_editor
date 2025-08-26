@@ -139,10 +139,18 @@
                 <!-- 텍스트 탭 -->
                 <div id="text-tab" class="editor-tab-content">
                     <div class="ppt-section">
+                        <h4>텍스트 추가</h4>
+                        <div class="button-group">
+                            <button onclick="addQuickText()">📝 텍스트 추가</button>
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
                         <h4>📝 텍스트 편집</h4>
                         <div class="ppt-control">
                             <label>텍스트 내용</label>
                             <textarea id="text-content" placeholder="텍스트를 입력하세요" 
+                                     oninput="syncTextContent()"
                                      style="width: 100%; height: 60px; padding: 8px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white; resize: vertical;"></textarea>
                         </div>
                         
@@ -250,6 +258,13 @@
 
                 <!-- 이미지 탭 -->
                 <div id="image-tab" class="editor-tab-content">
+                    <div class="ppt-section">
+                        <h4>이미지 추가</h4>
+                        <div class="button-group">
+                            <button onclick="addQuickImage()">🖼️ 이미지 추가</button>
+                        </div>
+                    </div>
+                    
                     <div class="ppt-section">
                         <h4>🖼️ 이미지 편집</h4>
                         <div class="ppt-control">
@@ -372,6 +387,14 @@
 
                 <!-- 도형 탭 -->
                 <div id="shape-tab" class="editor-tab-content">
+                    <div class="ppt-section">
+                        <h4>도형 추가</h4>
+                        <div class="button-group">
+                            <button onclick="addQuickShape('circle')">⭕ 원 추가</button>
+                            <button onclick="addQuickShape('rectangle')">⬜ 사각형 추가</button>
+                        </div>
+                    </div>
+                    
                     <div class="ppt-section">
                         <h4>🔺 도형 편집</h4>
                         
@@ -505,6 +528,13 @@
                 <!-- 동영상 탭 -->
                 <div id="video-tab" class="editor-tab-content">
                     <div class="ppt-section">
+                        <h4>동영상 추가</h4>
+                        <div class="button-group">
+                            <button onclick="addQuickVideo()">🎬 동영상 추가</button>
+                        </div>
+                    </div>
+                    
+                    <div class="ppt-section">
                         <h4>🎬 동영상 편집</h4>
                         <div class="ppt-control">
                             <label>동영상 크기</label>
@@ -589,6 +619,13 @@
 
                 <!-- 음성 탭 -->
                 <div id="audio-tab" class="editor-tab-content">
+                    <div class="ppt-section">
+                        <h4>음성 추가</h4>
+                        <div class="button-group">
+                            <button onclick="addQuickAudio()">🎵 음성 추가</button>
+                        </div>
+                    </div>
+                    
                     <div class="ppt-section">
                         <h4>🎵 음성 편집</h4>
                         <div class="ppt-control">
@@ -727,6 +764,211 @@
     <script src="js/init.js"></script>
     
     <script>
+        // ========== 전역 변수들 ==========
+        let selectedElement = null;
+        
+        // ========== 요소 선택 함수 ==========
+        function selectElement(element) {
+            // 기존 선택 해제
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+            }
+            
+            // 새 요소 선택
+            selectedElement = element;
+            element.classList.add('selected');
+            
+            console.log('요소 선택됨:', element);
+        }
+        
+        // ========== 캔버스 상태 저장 함수 ==========
+        function saveCanvasState() {
+            // 캔버스 상태 저장 (localStorage 등)
+            console.log('캔버스 상태 저장됨');
+        }
+        
+        // ========== 공통 편집 함수들 ==========
+        function duplicateElement() {
+            if (!selectedElement) {
+                alert('복제할 요소를 선택해주세요.');
+                return;
+            }
+            
+            const clone = selectedElement.cloneNode(true);
+            clone.style.left = (parseInt(selectedElement.style.left) + 20) + 'px';
+            clone.style.top = (parseInt(selectedElement.style.top) + 20) + 'px';
+            
+            // 이벤트 리스너 다시 설정
+            clone.onclick = function() {
+                selectElement(this);
+                if (this.classList.contains('canvas-text')) {
+                    loadTextToEditor(this);
+                }
+            };
+            
+            // 텍스트인 경우 드래그 이벤트도 다시 설정
+            if (clone.classList.contains('canvas-text')) {
+                setupTextDrag(clone);
+            }
+            
+            document.getElementById('canvas').appendChild(clone);
+            selectElement(clone);
+            saveCanvasState();
+        }
+        
+        function deleteSelectedElement() {
+            if (!selectedElement) {
+                alert('삭제할 요소를 선택해주세요.');
+                return;
+            }
+            
+            selectedElement.remove();
+            selectedElement = null;
+            saveCanvasState();
+        }
+        
+        // 기본 정렬 함수들 (간단 구현)
+        function alignLeft() {
+            if (!selectedElement) return;
+            selectedElement.style.left = '10px';
+            saveCanvasState();
+        }
+        
+        function alignCenter() {
+            if (!selectedElement) return;
+            const canvas = document.getElementById('canvas');
+            const canvasWidth = canvas.offsetWidth;
+            const elementWidth = selectedElement.offsetWidth;
+            selectedElement.style.left = ((canvasWidth - elementWidth) / 2) + 'px';
+            saveCanvasState();
+        }
+        
+        function alignRight() {
+            if (!selectedElement) return;
+            const canvas = document.getElementById('canvas');
+            const canvasWidth = canvas.offsetWidth;
+            const elementWidth = selectedElement.offsetWidth;
+            selectedElement.style.left = (canvasWidth - elementWidth - 10) + 'px';
+            saveCanvasState();
+        }
+        
+        function alignTop() {
+            if (!selectedElement) return;
+            selectedElement.style.top = '10px';
+            saveCanvasState();
+        }
+        
+        function alignMiddle() {
+            if (!selectedElement) return;
+            const canvas = document.getElementById('canvas');
+            const canvasHeight = canvas.offsetHeight;
+            const elementHeight = selectedElement.offsetHeight;
+            selectedElement.style.top = ((canvasHeight - elementHeight) / 2) + 'px';
+            saveCanvasState();
+        }
+        
+        function alignBottom() {
+            if (!selectedElement) return;
+            const canvas = document.getElementById('canvas');
+            const canvasHeight = canvas.offsetHeight;
+            const elementHeight = selectedElement.offsetHeight;
+            selectedElement.style.top = (canvasHeight - elementHeight - 10) + 'px';
+            saveCanvasState();
+        }
+        
+        // 레이어 관리 함수들 (간단 구현)
+        function bringToFront() {
+            if (!selectedElement) return;
+            selectedElement.style.zIndex = '1000';
+            saveCanvasState();
+        }
+        
+        function sendToBack() {
+            if (!selectedElement) return;
+            selectedElement.style.zIndex = '1';
+            saveCanvasState();
+        }
+        
+        function moveForward() {
+            if (!selectedElement) return;
+            const currentZ = parseInt(selectedElement.style.zIndex) || 10;
+            selectedElement.style.zIndex = (currentZ + 1).toString();
+            saveCanvasState();
+        }
+        
+        function moveBackward() {
+            if (!selectedElement) return;
+            const currentZ = parseInt(selectedElement.style.zIndex) || 10;
+            selectedElement.style.zIndex = Math.max(1, currentZ - 1).toString();
+            saveCanvasState();
+        }
+        
+        // 배경 관련 함수들
+        function changeBackground(background) {
+            const canvas = document.getElementById('canvas');
+            canvas.style.background = background;
+            saveCanvasState();
+        }
+        
+        function clearCanvas() {
+            if (!confirm('모든 요소를 삭제하시겠습니까?')) return;
+            
+            const canvas = document.getElementById('canvas');
+            const elements = canvas.querySelectorAll('.canvas-element');
+            elements.forEach(element => element.remove());
+            selectedElement = null;
+            saveCanvasState();
+        }
+        
+        function resetCanvas() {
+            if (!confirm('캔버스를 초기화하시겠습니까?')) return;
+            
+            clearCanvas();
+            changeBackground('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
+        }
+        
+        function zoomIn() {
+            console.log('확대 기능');
+        }
+        
+        function zoomOut() {
+            console.log('축소 기능');
+        }
+        
+        // 텍스트 전용 드래그 설정 함수
+        function setupTextDrag(textElement) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+            
+            textElement.addEventListener('mousedown', function(e) {
+                if (e.target === this) {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialX = parseInt(this.style.left) || 0;
+                    initialY = parseInt(this.style.top) || 0;
+                    this.style.cursor = 'grabbing';
+                    e.preventDefault();
+                }
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging && textElement) {
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    textElement.style.left = (initialX + deltaX) + 'px';
+                    textElement.style.top = (initialY + deltaY) + 'px';
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                if (isDragging && textElement) {
+                    isDragging = false;
+                    textElement.style.cursor = 'move';
+                }
+            });
+        }
+        
         // ========== 탭 전환 함수 ==========
         function switchEditorTab(tabName) {
             // 모든 탭 비활성화
@@ -743,7 +985,135 @@
             if (selectedTab) selectedTab.classList.add('active');
             if (selectedContent) selectedContent.classList.add('active');
             
+            // 텍스트 탭으로 전환할 때 선택된 텍스트 요소가 있으면 편집 도구에 로드
+            if (tabName === 'text' && selectedElement && selectedElement.classList.contains('canvas-text')) {
+                loadTextToEditor(selectedElement);
+            }
+            
             console.log('편집기 탭 전환:', tabName);
+        }
+        
+        // ========== 텍스트 편집 함수들 ==========
+        function updateTextFontSize(size) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            selectedElement.style.fontSize = size + 'px';
+            document.getElementById('text-font-size-value').textContent = size + 'px';
+            saveCanvasState();
+        }
+        
+        function updateTextColor(color) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            selectedElement.style.color = color;
+            saveCanvasState();
+        }
+        
+        function updateTextBgColor(color) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            selectedElement.style.backgroundColor = color;
+            saveCanvasState();
+        }
+        
+        function toggleTextBold() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            const currentWeight = selectedElement.style.fontWeight;
+            selectedElement.style.fontWeight = currentWeight === 'bold' ? 'normal' : 'bold';
+            
+            const btn = document.getElementById('text-bold-btn');
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+            saveCanvasState();
+        }
+        
+        function toggleTextItalic() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            const currentStyle = selectedElement.style.fontStyle;
+            selectedElement.style.fontStyle = currentStyle === 'italic' ? 'normal' : 'italic';
+            
+            const btn = document.getElementById('text-italic-btn');
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+            saveCanvasState();
+        }
+        
+        function toggleTextUnderline() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            const currentDecoration = selectedElement.style.textDecoration;
+            selectedElement.style.textDecoration = currentDecoration === 'underline' ? 'none' : 'underline';
+            
+            const btn = document.getElementById('text-underline-btn');
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+            saveCanvasState();
+        }
+        
+        // 텍스트 내용 실시간 연동
+        function syncTextContent() {
+            const textContent = document.getElementById('text-content');
+            if (textContent && selectedElement && selectedElement.classList.contains('canvas-text')) {
+                selectedElement.innerHTML = textContent.value;
+                saveCanvasState();
+            }
+        }
+        
+        // 선택된 텍스트 요소의 값을 편집 도구에 반영
+        function loadTextToEditor(element) {
+            if (!element || !element.classList.contains('canvas-text')) return;
+            
+            const textContent = document.getElementById('text-content');
+            const textColor = document.getElementById('text-color');
+            const textBgColor = document.getElementById('text-bg-color');
+            const textFontSize = document.getElementById('text-font-size');
+            const textWidth = document.getElementById('text-width');
+            const textHeight = document.getElementById('text-height');
+            const textX = document.getElementById('text-x');
+            const textY = document.getElementById('text-y');
+            
+            if (textContent) {
+                textContent.value = element.textContent || element.innerHTML;
+            }
+            if (textColor) {
+                textColor.value = rgb2hex(element.style.color) || '#ffffff';
+            }
+            if (textBgColor) {
+                textBgColor.value = rgb2hex(element.style.backgroundColor) || '#000000';
+            }
+            if (textFontSize) {
+                const fontSize = parseInt(element.style.fontSize) || 16;
+                textFontSize.value = fontSize;
+                document.getElementById('text-font-size-value').textContent = fontSize + 'px';
+            }
+            if (textWidth) {
+                const width = parseInt(element.style.width) || 150;
+                textWidth.value = width;
+                document.getElementById('text-width-value').textContent = width + 'px';
+            }
+            if (textHeight) {
+                const height = parseInt(element.style.height) || 50;
+                textHeight.value = height;
+                document.getElementById('text-height-value').textContent = height + 'px';
+            }
+            if (textX) {
+                textX.value = parseInt(element.style.left) || 0;
+            }
+            if (textY) {
+                textY.value = parseInt(element.style.top) || 0;
+            }
+        }
+        
+        // RGB를 HEX로 변환하는 헬퍼 함수
+        function rgb2hex(rgb) {
+            if (!rgb || rgb.indexOf("rgb") === -1) return rgb;
+            
+            rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!rgb) return "#000000";
+            
+            function hex(x) {
+                return ("0" + parseInt(x).toString(16)).slice(-2);
+            }
+            return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
         }
         
         // ========== 요소 추가 함수들 ==========
@@ -758,9 +1128,17 @@
             textElement.style.left = '50px';
             textElement.style.top = '50px';
             textElement.style.cursor = 'move';
+            
             textElement.onclick = function() {
                 selectElement(this);
+                // 텍스트 탭이 활성화되어 있을 때만 편집 도구에 값 로드
+                if (document.getElementById('text-tab').classList.contains('active')) {
+                    loadTextToEditor(this);
+                }
             };
+            
+            // 드래그 기능 설정
+            setupTextDrag(textElement);
             
             canvas.appendChild(textElement);
             
@@ -768,9 +1146,7 @@
             switchEditorTab('text');
             
             // 요소 선택
-            if (typeof selectElement === 'function') {
-                selectElement(textElement);
-            }
+            selectElement(textElement);
             
             console.log('텍스트 요소 추가 및 텍스트 탭으로 이동');
         }
@@ -804,9 +1180,7 @@
                         canvas.appendChild(imgElement);
                         
                         // 요소 선택
-                        if (typeof selectElement === 'function') {
-                            selectElement(imgElement);
-                        }
+                        selectElement(imgElement);
                         
                         console.log('이미지 요소 추가');
                     };
@@ -850,9 +1224,7 @@
             switchEditorTab('shape');
             
             // 요소 선택
-            if (typeof selectElement === 'function') {
-                selectElement(shapeElement);
-            }
+            selectElement(shapeElement);
             
             console.log(`${shapeType} 도형 추가 및 도형 탭으로 이동`);
         }
@@ -885,9 +1257,7 @@
                     canvas.appendChild(videoElement);
                     
                     // 요소 선택
-                    if (typeof selectElement === 'function') {
-                        selectElement(videoElement);
-                    }
+                    selectElement(videoElement);
                     
                     console.log('동영상 요소 추가');
                 }
@@ -927,9 +1297,7 @@
                     canvas.appendChild(audioElement);
                     
                     // 요소 선택
-                    if (typeof selectElement === 'function') {
-                        selectElement(audioElement);
-                    }
+                    selectElement(audioElement);
                     
                     console.log('음성 요소 추가');
                 }
