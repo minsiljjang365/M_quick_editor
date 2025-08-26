@@ -748,6 +748,50 @@
     <script src="js/init.js"></script>
     
     <script>
+// 전역 변수 선언
+let selectedElement = null;
+window.selectedElement = null;
+
+// 요소 선택 함수
+function selectElement(element) {
+    // 기존 선택 해제
+    const prevSelected = document.querySelector('.canvas-element.selected');
+    if (prevSelected) {
+        prevSelected.classList.remove('selected');
+        prevSelected.style.border = '';
+    }
+    
+    // 새 요소 선택
+    selectedElement = element;
+    window.selectedElement = element;
+    
+    if (element) {
+        element.classList.add('selected');
+        element.style.border = '2px solid #007bff';
+        
+        // 해당 탭으로 자동 전환
+        if (element.classList.contains('canvas-text')) {
+            switchEditorTab('text');
+        } else if (element.classList.contains('canvas-image')) {
+            switchEditorTab('image');
+        } else if (element.classList.contains('canvas-shape')) {
+            switchEditorTab('shape');
+        } else if (element.classList.contains('canvas-video')) {
+            switchEditorTab('video');
+        } else if (element.classList.contains('canvas-audio')) {
+            switchEditorTab('audio');
+        }
+        
+        console.log('요소 선택됨:', element.className);
+    }
+}
+
+// 캔버스 클릭시 선택 해제
+document.getElementById('canvas').onclick = function(e) {
+    if (e.target.id === 'canvas') {
+        selectElement(null);
+    }
+};
         // ========== 탭 전환 함수 ==========
 function switchEditorTab(tabName) {
     // 모든 탭 비활성화
