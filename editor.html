@@ -1554,38 +1554,48 @@ document.addEventListener('mouseup', function() {
             window.open('admin.html', '_blank');
         }
         
-        function saveProject() {
-            // 현재 프로젝트 상태 저장
-            const projectData = {
-                name: document.getElementById('project-title').textContent,
-                canvas: document.getElementById('canvas').innerHTML,
-                timestamp: new Date().toISOString(),
-                elements: []
-            };
-            
-            // 캔버스 요소들 수집
-            const elements = document.querySelectorAll('.canvas-element');
-            elements.forEach((element, index) => {
-                projectData.elements.push({
-                    id: element.id,
-                    type: element.classList.contains('canvas-text') ? 'text' : 
-                          element.classList.contains('canvas-image') ? 'image' : 
-                          element.classList.contains('canvas-shape') ? 'shape' : 'unknown',
-                    style: element.style.cssText,
-                    content: element.innerHTML || element.src,
-                    position: {
-                        left: element.style.left,
-                        top: element.style.top
-                    }
-                });
-            });
-            
-            // localStorage에 저장
-            localStorage.setItem('currentProject', JSON.stringify(projectData));
-            
-            alert('✅ 프로젝트가 저장되었습니다!\n\n저장 시간: ' + new Date().toLocaleString());
-            console.log('💾 프로젝트 저장 완료:', projectData);
-        }
+function saveProject() {
+    // 프로젝트 이름 입력 받기
+    let projectName = document.getElementById('project-title').textContent;
+    if (projectName === '프로젝트: 테스트 프로젝트' || projectName === '프로젝트: ') {
+        projectName = prompt('프로젝트 이름을 입력하세요:', '새 프로젝트');
+        if (!projectName) return;
+        document.getElementById('project-title').textContent = '프로젝트: ' + projectName;
+    }
+    
+    // 현재 프로젝트 상태 저장
+    const projectData = {
+        name: projectName,
+        canvas: document.getElementById('canvas').innerHTML,
+        timestamp: new Date().toISOString(),
+        elements: []
+    };
+    
+    // 캔버스 요소들 수집
+    const elements = document.querySelectorAll('.canvas-element');
+    elements.forEach((element, index) => {
+        projectData.elements.push({
+            id: element.id,
+            type: element.classList.contains('canvas-text') ? 'text' : 
+                  element.classList.contains('canvas-image') ? 'image' : 
+                  element.classList.contains('canvas-shape') ? 'shape' : 
+                  element.classList.contains('canvas-video') ? 'video' :
+                  element.classList.contains('canvas-audio') ? 'audio' : 'unknown',
+            style: element.style.cssText,
+            content: element.innerHTML || element.src,
+            position: {
+                left: element.style.left,
+                top: element.style.top
+            }
+        });
+    });
+    
+    // localStorage에 저장
+    localStorage.setItem('currentProject', JSON.stringify(projectData));
+    
+    alert(`프로젝트 "${projectName}"이 저장되었습니다!\n\n저장 시간: ` + new Date().toLocaleString());
+    console.log('프로젝트 저장 완료:', projectData);
+}
 
         // ========== 플레이어 기능 ==========
         let currentMode = 'edit';
@@ -1898,7 +1908,7 @@ document.addEventListener('mouseup', function() {
                 const projectData = JSON.parse(saved);
                 
                 // 프로젝트 제목 복원
-                document.getElementById('project-title').textContent = projectData.name;
+                document.getElementById('project-title').textContent = '프로젝트: ' + projectData.name;
                 
                 // 캔버스 초기화
                 const canvas = document.getElementById('canvas');
