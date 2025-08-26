@@ -171,6 +171,44 @@
             margin: 0 auto;
             border: 2px solid #007bff;
         }
+
+        /* 검색 결과 스타일 */
+        .search-result-item {
+            display: flex;
+            margin: 5px 0;
+            padding: 5px;
+            background: #404040;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .search-result-item:hover {
+            background: #555;
+        }
+        
+        .search-result-thumbnail {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        
+        .search-result-info {
+            flex: 1;
+            color: white;
+            font-size: 11px;
+        }
+        
+        .search-result-title {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .search-result-source {
+            color: #ccc;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -603,26 +641,25 @@
             <div id="source-content">
                 <!-- 미디어 소스 -->
                 <div id="media-sources" class="source-section active">
-                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="image" data-src="https://via.placeholder.com/200x150/4A90E2/white?text=샘플+이미지">
-                        <div class="source-item-title">📷 샘플 이미지</div>
-                        <div class="source-item-desc">드래그해서 캔버스에 추가</div>
-                    </div>
-                    
-                    <div class="source-item" draggable="true" ondragstart="dragStart(event)" data-type="image" data-src="https://via.placeholder.com/200x150/E74C3C/white?text=로고">
-                        <div class="source-item-title">🏷️ 로고</div>
-                        <div class="source-item-desc">브랜드 로고 이미지</div>
-                    </div>
-                    
                     <div class="source-item">
                         <div class="source-item-title">📤 직접 업로드</div>
                         <input type="file" accept="image/*,video/*" onchange="uploadFile(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">🌐 무료 스톡</div>
+                        <div class="source-item-title">🌐 무료 이미지</div>
                         <div class="source-item-desc">API로 무료 이미지 검색</div>
-                        <input type="text" placeholder="검색어 입력" id="stock-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
-                        <button onclick="searchStockImages()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
+                        <input type="text" placeholder="검색어 입력" id="stock-image-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+                        <button onclick="searchStockImages()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">이미지 검색</button>
+                        <div id="image-search-results" style="margin-top: 10px;"></div>
+                    </div>
+                    
+                    <div class="source-item">
+                        <div class="source-item-title">🎬 무료 동영상</div>
+                        <div class="source-item-desc">API로 무료 동영상 검색</div>
+                        <input type="text" placeholder="검색어 입력" id="stock-video-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+                        <button onclick="searchStockVideos()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">동영상 검색</button>
+                        <div id="video-search-results" style="margin-top: 10px;"></div>
                     </div>
                     
                     <div class="source-item">
@@ -630,6 +667,7 @@
                         <div class="source-item-desc">AI로 이미지 생성</div>
                         <textarea placeholder="생성할 이미지 설명" id="ai-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
                         <button onclick="generateAIImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #9b59b6; border: none; color: white; border-radius: 3px; cursor: pointer;">생성</button>
+                        <div id="ai-image-result" style="margin-top: 10px;"></div>
                     </div>
                 </div>
                 
@@ -684,7 +722,7 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">🔊 보유 효과음</div>
+                        <div class="source-item-title">📊 보유 효과음</div>
                         <div class="source-item-desc">업로드한 효과음 선택</div>
                         <select id="owned-sfx" onchange="selectOwnedSFX()" style="width: 100%; margin-top: 5px;">
                             <option value="">효과음 선택</option>
