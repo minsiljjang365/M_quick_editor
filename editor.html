@@ -209,6 +209,49 @@
             color: #ccc;
             font-size: 10px;
         }
+
+        /* AI 모델 선택 스타일 */
+        .model-selector {
+            margin-bottom: 8px;
+        }
+        
+        .model-selector select {
+            width: 100%;
+            padding: 5px;
+            background: #555;
+            border: 1px solid #666;
+            color: white;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .model-selector label {
+            display: block;
+            color: #ccc;
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+
+        /* AI 생성 섹션 구분 */
+        .ai-generation-section {
+            border: 1px solid #444;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        .ai-section-header {
+            background: #3a3a3a;
+            padding: 8px 10px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .ai-section-content {
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -601,7 +644,7 @@
                         <h4>🎯 선택된 요소</h4>
                         <div class="button-group">
                             <button onclick="copySelectedElement()">📋 복사</button>
-                            <button onclick="duplicateElement()">📑 복제</button>
+                            <button onclick="duplicateElement()">🔁 복제</button>
                         </div>
                         <div class="button-group" style="margin-top: 5px;">
                             <button onclick="groupElements()">🔗 그룹</button>
@@ -662,12 +705,81 @@
                         <div id="video-search-results" style="margin-top: 10px;"></div>
                     </div>
                     
-                    <div class="source-item">
-                        <div class="source-item-title">🎨 AI 이미지 생성</div>
-                        <div class="source-item-desc">AI로 이미지 생성</div>
-                        <textarea placeholder="생성할 이미지 설명" id="ai-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
-                        <button onclick="generateAIImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #9b59b6; border: none; color: white; border-radius: 3px; cursor: pointer;">생성</button>
-                        <div id="ai-image-result" style="margin-top: 10px;"></div>
+                    <!-- 🔥 AI 생성 섹션들 - 모델 선택 포함 -->
+                    
+                    <!-- 1. 텍스트 → 이미지 생성 -->
+                    <div class="ai-generation-section">
+                        <div class="ai-section-header">🎨 AI 이미지 생성 (텍스트 → 이미지)</div>
+                        <div class="ai-section-content">
+                            <div class="model-selector">
+                                <label>모델 선택</label>
+                                <select id="text-to-image-model">
+                                    <option value="fal-ai/flux/schnell">Flux Schnell (빠름)</option>
+                                    <option value="fal-ai/flux/dev">Flux Dev (고품질)</option>
+                                    <option value="fal-ai/stable-diffusion-v3-medium">Stable Diffusion v3</option>
+                                    <option value="fal-ai/aura-flow">Aura Flow</option>
+                                </select>
+                            </div>
+                            <textarea placeholder="생성할 이미지 설명&#10;예: A cozy coffee shop with warm lighting" id="ai-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+                            <button onclick="generateAIImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #9b59b6; border: none; color: white; border-radius: 3px; cursor: pointer;">생성</button>
+                            <div id="ai-image-result" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 2. 이미지 → 이미지 변환 -->
+                    <div class="ai-generation-section">
+                        <div class="ai-section-header">🔄 AI 이미지 변환 (이미지 → 이미지)</div>
+                        <div class="ai-section-content">
+                            <div class="model-selector">
+                                <label>모델 선택</label>
+                                <select id="image-to-image-model">
+                                    <option value="fal-ai/flux/dev/image-to-image">Flux Dev (추천)</option>
+                                    <option value="fal-ai/flux/schnell/image-to-image">Flux Schnell (빠름)</option>
+                                    <option value="fal-ai/stable-diffusion-v3-medium/image-to-image">Stable Diffusion v3</option>
+                                </select>
+                            </div>
+                            <input type="file" accept="image/*" id="ai-image-to-image-file" style="width: 100%; margin-top: 5px; font-size: 11px;">
+                            <textarea placeholder="변환 설명&#10;예: make it look like a painting" id="ai-image-to-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+                            <button onclick="generateImageToImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #e67e22; border: none; color: white; border-radius: 3px; cursor: pointer;">변환</button>
+                            <div id="ai-image-to-image-result" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 3. 텍스트 → 동영상 생성 -->
+                    <div class="ai-generation-section">
+                        <div class="ai-section-header">🎬 AI 동영상 생성 (텍스트 → 동영상)</div>
+                        <div class="ai-section-content">
+                            <div class="model-selector">
+                                <label>모델 선택</label>
+                                <select id="text-to-video-model">
+                                    <option value="fal-ai/luma-dream-machine">Luma Dream Machine (추천)</option>
+                                    <option value="fal-ai/runway-gen3">Runway Gen3</option>
+                                    <option value="fal-ai/stable-video">Stable Video</option>
+                                </select>
+                            </div>
+                            <textarea placeholder="동영상 설명&#10;예: A person walking in a beautiful garden" id="ai-text-to-video-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+                            <button onclick="generateTextToVideo()" style="width: 100%; margin-top: 5px; padding: 5px; background: #2980b9; border: none; color: white; border-radius: 3px; cursor: pointer;">생성 (1-3분)</button>
+                            <div id="ai-text-to-video-result" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 4. 이미지 → 동영상 생성 -->
+                    <div class="ai-generation-section">
+                        <div class="ai-section-header">📹 AI 이미지 애니메이션 (이미지 → 동영상)</div>
+                        <div class="ai-section-content">
+                            <div class="model-selector">
+                                <label>모델 선택</label>
+                                <select id="image-to-video-model">
+                                    <option value="fal-ai/luma-dream-machine">Luma Dream Machine (추천)</option>
+                                    <option value="fal-ai/runway-gen3">Runway Gen3</option>
+                                    <option value="fal-ai/stable-video">Stable Video</option>
+                                </select>
+                            </div>
+                            <input type="file" accept="image/*" id="ai-image-to-video-file" style="width: 100%; margin-top: 5px; font-size: 11px;">
+                            <textarea placeholder="애니메이션 설명 (선택사항)&#10;예: animate this image smoothly" id="ai-image-to-video-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+                            <button onclick="generateImageToVideo()" style="width: 100%; margin-top: 5px; padding: 5px; background: #27ae60; border: none; color: white; border-radius: 3px; cursor: pointer;">애니메이션 (1-3분)</button>
+                            <div id="ai-image-to-video-result" style="margin-top: 10px;"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1299,7 +1411,7 @@
 출력 설정:
 - 해상도: 1080x1920 (세로형 쇼츠)  
 - 포맷: MP4 (H.264)
-- 프레임률: 30fps
+- 프레임율: 30fps
 - 길이: ${formatTime(totalDuration)}
 
 파일이 다운로드 폴더에 저장됩니다.`);
@@ -1434,7 +1546,7 @@
         
         // 페이지 로드 완료 시 초기화 및 자동 불러오기
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장, 크기 조절 기능 추가');
+            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장, 크기 조절 기능 추가, AI 모델 선택 UI 포함');
             
             // 저장된 프로젝트 자동 불러오기
             if (loadProject()) {
