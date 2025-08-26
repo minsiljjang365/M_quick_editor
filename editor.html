@@ -966,12 +966,10 @@ function switchEditorTab(tabName) {
             });
             
             textElement.onclick = function() {
-                selectElement(this);
-                // 텍스트 탭이 활성화되어 있을 때만 편집 도구에 값 로드
-                if (document.getElementById('text-tab').classList.contains('active')) {
-                    loadTextToEditor(this);
-                }
-            };
+    selectElement(this);
+    switchEditorTab('text'); // 이 줄 추가
+    loadTextToEditor(this);
+};
 
             // 여기에 추가
 textElement.addEventListener('input', function() {
@@ -1022,9 +1020,10 @@ textElement.addEventListener('blur', function() {
                         imgElement.style.width = '100px';
                         imgElement.style.height = 'auto';
                         imgElement.style.cursor = 'move';
-                        imgElement.onclick = function() {
-                            selectElement(this);
-                        };
+imgElement.onclick = function() {
+    selectElement(this);
+    switchEditorTab('image'); // 이 줄 추가
+};
                         
                         canvas.appendChild(imgElement);
                         
@@ -1065,9 +1064,10 @@ textElement.addEventListener('blur', function() {
                 shapeElement.style.backgroundColor = '#667eea';
             }
             
-            shapeElement.onclick = function() {
-                selectElement(this);
-            };
+shapeElement.onclick = function() {
+    selectElement(this);
+    switchEditorTab('shape'); // 이 줄 추가
+};
             
             canvas.appendChild(shapeElement);
             
@@ -1104,8 +1104,9 @@ textElement.addEventListener('blur', function() {
                     videoElement.style.height = 'auto';
                     videoElement.style.cursor = 'move';
                     videoElement.onclick = function() {
-                        selectElement(this);
-                    };
+    selectElement(this);
+    switchEditorTab('video'); // 이 줄 추가
+};
                     
                     canvas.appendChild(videoElement);
                     
@@ -1146,8 +1147,9 @@ textElement.addEventListener('blur', function() {
                     audioElement.style.width = '200px';
                     audioElement.style.cursor = 'move';
                     audioElement.onclick = function() {
-                        selectElement(this);
-                    };
+    selectElement(this);
+    switchEditorTab('audio'); // 이 줄 추가
+};
                     
                     canvas.appendChild(audioElement);
                     
