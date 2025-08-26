@@ -297,7 +297,82 @@
                     </div>
                 </div>
 
-                <!-- 텍스트 편집기는 text-editor.html에서 로드됨 -->
+                <!-- 텍스트 편집 (선택시 표시) -->
+                <div id="text-editor" style="display: none;">
+                    <div class="ppt-section">
+                        <h4>📝 텍스트 편집</h4>
+                        <div class="ppt-control">
+                            <label>텍스트 내용</label>
+                            <textarea id="text-content" placeholder="텍스트를 입력하세요" 
+                                     style="width: 100%; height: 60px; padding: 8px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white; resize: vertical;"></textarea>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>폰트 크기</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="text-font-size" min="12" max="48" value="16" 
+                                       oninput="updateTextFontSize(this.value)" style="flex: 1;">
+                                <span id="text-font-size-value" style="min-width: 40px; color: #ccc;">16px</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 🔥 새로 추가: 텍스트 박스 크기 조절 -->
+                        <div class="ppt-control">
+                            <label>텍스트 박스 너비</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="text-width" min="50" max="280" value="150" 
+                                       oninput="updateTextWidth(this.value)" style="flex: 1;">
+                                <span id="text-width-value" style="min-width: 50px; color: #ccc;">150px</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>텍스트 박스 높이</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="text-height" min="30" max="200" value="50" 
+                                       oninput="updateTextHeight(this.value)" style="flex: 1;">
+                                <span id="text-height-value" style="min-width: 50px; color: #ccc;">50px</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>글자 색상</label>
+                            <input type="color" id="text-color" value="#ffffff" 
+                                   onchange="updateTextColor(this.value)" style="width: 100%; height: 30px;">
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>배경 색상</label>
+                            <input type="color" id="text-bg-color" value="#000000" 
+                                   onchange="updateTextBgColor(this.value)" style="width: 100%; height: 30px;">
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="text-bold-btn" onclick="toggleTextBold()">B</button>
+                            <button id="text-italic-btn" onclick="toggleTextItalic()">I</button>
+                            <button id="text-underline-btn" onclick="toggleTextUnderline()">U</button>
+                        </div>
+                        
+                        <!-- 🔥 새로 추가: 텍스트 위치 조정 -->
+                        <div class="ppt-control">
+                            <label>위치 조정</label>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">X</label>
+                                    <input type="number" id="text-x" min="0" max="300" 
+                                           onchange="updateTextPosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">Y</label>
+                                    <input type="number" id="text-y" min="0" max="500" 
+                                           onchange="updateTextPosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- 이미지 편집 (선택시 표시) -->
                 <div id="image-editor" style="display: none;">
@@ -306,20 +381,41 @@
                         <div class="ppt-control">
                             <label>너비</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="image-width" min="50" max="280" value="150" style="flex: 1;">
+                                <input type="range" id="image-width" min="50" max="280" value="150" 
+                                       oninput="updateImageWidth(this.value)" style="flex: 1;">
                                 <span id="image-width-value" style="min-width: 50px; color: #ccc;">150px</span>
                             </div>
                         </div>
                         <div class="ppt-control">
                             <label>높이</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="image-height" min="50" max="450" value="150" style="flex: 1;">
+                                <input type="range" id="image-height" min="50" max="450" value="150" 
+                                       oninput="updateImageHeight(this.value)" style="flex: 1;">
                                 <span id="image-height-value" style="min-width: 50px; color: #ccc;">150px</span>
                             </div>
                         </div>
                         <div class="button-group">
                             <button id="lock-ratio-btn" onclick="toggleAspectRatio()">🔒 비율고정</button>
                             <button onclick="resetImageSize()">↩️ 원래크기</button>
+                        </div>
+                        
+                        <!-- 이미지 위치 조정 -->
+                        <div class="ppt-control">
+                            <label>위치 조정</label>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">X</label>
+                                    <input type="number" id="image-x" min="0" max="300" 
+                                           onchange="updateImagePosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">Y</label>
+                                    <input type="number" id="image-y" min="0" max="500" 
+                                           onchange="updateImagePosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -328,14 +424,16 @@
                         <div class="ppt-control">
                             <label>투명도</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="image-opacity" min="0" max="100" value="100" style="flex: 1;">
+                                <input type="range" id="image-opacity" min="0" max="100" value="100" 
+                                       oninput="updateImageOpacity(this.value)" style="flex: 1;">
                                 <span id="image-opacity-value" style="min-width: 40px; color: #ccc;">100%</span>
                             </div>
                         </div>
                         <div class="ppt-control">
                             <label>회전</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="image-rotation" min="0" max="360" value="0" style="flex: 1;">
+                                <input type="range" id="image-rotation" min="0" max="360" value="0" 
+                                       oninput="updateImageRotation(this.value)" style="flex: 1;">
                                 <span id="image-rotation-value" style="min-width: 40px; color: #ccc;">0°</span>
                             </div>
                         </div>
@@ -360,18 +458,101 @@
                             <button onclick="applyImageFilter('blur')">🌫️ 블러</button>
                         </div>
                     </div>
+                </div>
+
+                <!-- 🔥 새로 추가: 도형 편집 (선택시 표시) -->
+                <div id="shape-editor" style="display: none;">
+                    <div class="ppt-section">
+                        <h4>🔺 도형 편집</h4>
+                        
+                        <!-- 도형 크기 조절 -->
+                        <div class="ppt-control">
+                            <label>도형 너비</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="shape-width" min="20" max="280" value="120" 
+                                       oninput="updateShapeWidth(this.value)" style="flex: 1;">
+                                <span id="shape-width-value" style="min-width: 50px; color: #ccc;">120px</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>도형 높이</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="shape-height" min="20" max="200" value="80" 
+                                       oninput="updateShapeHeight(this.value)" style="flex: 1;">
+                                <span id="shape-height-value" style="min-width: 50px; color: #ccc;">80px</span>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="shape-lock-ratio-btn" onclick="toggleShapeAspectRatio()">🔒 비율고정</button>
+                            <button onclick="resetShapeSize()">↩️ 원래크기</button>
+                        </div>
+                        
+                        <!-- 도형 위치 조정 -->
+                        <div class="ppt-control">
+                            <label>위치 조정</label>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">X</label>
+                                    <input type="number" id="shape-x" min="0" max="300" 
+                                           onchange="updateShapePosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 10px;">Y</label>
+                                    <input type="number" id="shape-y" min="0" max="500" 
+                                           onchange="updateShapePosition()" 
+                                           style="width: 100%; padding: 4px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="ppt-section">
-                        <h4>위치 조정</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>X</label>
-                                <input type="number" id="image-x" min="0" max="300" style="width: 100%; padding: 6px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                        <h4>도형 스타일</h4>
+                        <div class="ppt-control">
+                            <label>배경 색상</label>
+                            <input type="color" id="shape-bg-color" value="#667eea" 
+                                   onchange="updateShapeBgColor(this.value)" style="width: 100%; height: 30px;">
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>테두리 색상</label>
+                            <input type="color" id="shape-border-color" value="#333333" 
+                                   onchange="updateShapeBorderColor(this.value)" style="width: 100%; height: 30px;">
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>테두리 두께</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="shape-border-width" min="0" max="10" value="0" 
+                                       oninput="updateShapeBorderWidth(this.value)" style="flex: 1;">
+                                <span id="shape-border-width-value" style="min-width: 40px; color: #ccc;">0px</span>
                             </div>
-                            <div class="ppt-control" style="flex: 1;">
-                                <label>Y</label>
-                                <input type="number" id="image-y" min="0" max="500" style="width: 100%; padding: 6px; background: #404040; border: 1px solid #555; border-radius: 4px; color: white;">
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>투명도</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="shape-opacity" min="0" max="100" value="100" 
+                                       oninput="updateShapeOpacity(this.value)" style="flex: 1;">
+                                <span id="shape-opacity-value" style="min-width: 40px; color: #ccc;">100%</span>
                             </div>
+                        </div>
+                        
+                        <div class="ppt-control">
+                            <label>회전</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="shape-rotation" min="0" max="360" value="0" 
+                                       oninput="updateShapeRotation(this.value)" style="flex: 1;">
+                                <span id="shape-rotation-value" style="min-width: 40px; color: #ccc;">0°</span>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button onclick="rotateShape(90)">↻ 90° 회전</button>
+                            <button onclick="rotateShape(-90)">↺ -90° 회전</button>
                         </div>
                     </div>
                 </div>
@@ -413,7 +594,7 @@
         <!-- 소스 패널 -->
         <div id="source-panel">
             <div id="source-tabs">
-                <button class="source-tab active" onclick="switchTab('media')">📁<br>미디어</button>
+                <button class="source-tab active" onclick="switchTab('media')">🖼<br>미디어</button>
                 <button class="source-tab" onclick="switchTab('text')">📝<br>텍스트</button>
                 <button class="source-tab" onclick="switchTab('audio')">🎵<br>음성</button>
                 <button class="source-tab" onclick="switchTab('template')">🎨<br>템플릿</button>
@@ -438,7 +619,7 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">🌍 무료 스톡</div>
+                        <div class="source-item-title">🌐 무료 스톡</div>
                         <div class="source-item-desc">API로 무료 이미지 검색</div>
                         <input type="text" placeholder="검색어 입력" id="stock-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
                         <button onclick="searchStockImages()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
@@ -503,7 +684,7 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">📊 보유 효과음</div>
+                        <div class="source-item-title">🔊 보유 효과음</div>
                         <div class="source-item-desc">업로드한 효과음 선택</div>
                         <select id="owned-sfx" onchange="selectOwnedSFX()" style="width: 100%; margin-top: 5px;">
                             <option value="">효과음 선택</option>
@@ -515,7 +696,7 @@
                     </div>
                     
                     <div class="source-item">
-                        <div class="source-item-title">🌍 무료 효과음</div>
+                        <div class="source-item-title">🌐 무료 효과음</div>
                         <div class="source-item-desc">API로 무료 효과음 검색</div>
                         <input type="text" placeholder="효과음 검색 (예: 박수, 폭발)" id="sfx-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
                         <button onclick="searchFreeSFX()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">검색</button>
@@ -553,6 +734,227 @@
     <script src="js/init.js"></script>
     
     <script>
+        // ========== 🔥 텍스트 크기 조절 함수들 (새로 추가) ==========
+        function updateTextWidth(width) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            
+            selectedElement.style.width = width + 'px';
+            document.getElementById('text-width-value').textContent = width + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateTextHeight(height) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            
+            selectedElement.style.height = height + 'px';
+            document.getElementById('text-height-value').textContent = height + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateTextPosition() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-text')) return;
+            
+            const x = document.getElementById('text-x').value;
+            const y = document.getElementById('text-y').value;
+            
+            selectedElement.style.left = x + 'px';
+            selectedElement.style.top = y + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        // ========== 🔥 이미지 위치 조절 함수 (새로 추가) ==========
+        function updateImageWidth(width) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-image')) return;
+            
+            selectedElement.style.width = width + 'px';
+            document.getElementById('image-width-value').textContent = width + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateImageHeight(height) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-image')) return;
+            
+            selectedElement.style.height = height + 'px';
+            document.getElementById('image-height-value').textContent = height + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateImagePosition() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-image')) return;
+            
+            const x = document.getElementById('image-x').value;
+            const y = document.getElementById('image-y').value;
+            
+            selectedElement.style.left = x + 'px';
+            selectedElement.style.top = y + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        // ========== 🔥 도형 크기/위치 조절 함수들 (새로 추가) ==========
+        function updateShapeWidth(width) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            
+            selectedElement.style.width = width + 'px';
+            document.getElementById('shape-width-value').textContent = width + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateShapeHeight(height) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            
+            selectedElement.style.height = height + 'px';
+            document.getElementById('shape-height-value').textContent = height + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateShapePosition() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            
+            const x = document.getElementById('shape-x').value;
+            const y = document.getElementById('shape-y').value;
+            
+            selectedElement.style.left = x + 'px';
+            selectedElement.style.top = y + 'px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function updateShapeBgColor(color) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            selectedElement.style.backgroundColor = color;
+            saveCanvasState();
+        }
+        
+        function updateShapeBorderColor(color) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            selectedElement.style.borderColor = color;
+            saveCanvasState();
+        }
+        
+        function updateShapeBorderWidth(width) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            selectedElement.style.borderWidth = width + 'px';
+            selectedElement.style.borderStyle = width > 0 ? 'solid' : 'none';
+            document.getElementById('shape-border-width-value').textContent = width + 'px';
+            saveCanvasState();
+        }
+        
+        function updateShapeOpacity(opacity) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            selectedElement.style.opacity = opacity / 100;
+            document.getElementById('shape-opacity-value').textContent = opacity + '%';
+            saveCanvasState();
+        }
+        
+        function updateShapeRotation(angle) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            selectedElement.style.transform = `rotate(${angle}deg)`;
+            document.getElementById('shape-rotation-value').textContent = angle + '°';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+        
+        function rotateShape(angle) {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            
+            const currentRotation = parseInt(document.getElementById('shape-rotation').value) || 0;
+            const newRotation = (currentRotation + angle) % 360;
+            
+            document.getElementById('shape-rotation').value = newRotation;
+            updateShapeRotation(newRotation);
+        }
+        
+        function toggleShapeAspectRatio() {
+            // 비율 고정 기능 구현
+            const btn = document.getElementById('shape-lock-ratio-btn');
+            btn.classList.toggle('active');
+            
+            if (btn.classList.contains('active')) {
+                btn.innerHTML = '🔓 비율해제';
+                btn.style.background = '#007bff';
+            } else {
+                btn.innerHTML = '🔒 비율고정';
+                btn.style.background = '#555';
+            }
+        }
+        
+        function resetShapeSize() {
+            if (!selectedElement || !selectedElement.classList.contains('canvas-shape')) return;
+            
+            selectedElement.style.width = '120px';
+            selectedElement.style.height = '80px';
+            
+            document.getElementById('shape-width').value = 120;
+            document.getElementById('shape-height').value = 80;
+            document.getElementById('shape-width-value').textContent = '120px';
+            document.getElementById('shape-height-value').textContent = '80px';
+            
+            // 리사이즈 핸들 업데이트
+            if (typeof updateResizeHandles === 'function') {
+                updateResizeHandles();
+            }
+            
+            saveCanvasState();
+        }
+
         // ========== 네비게이션 기능 업데이트 ==========
         function goHome() {
             window.location.href = 'index.html';
@@ -577,7 +979,9 @@
             elements.forEach((element, index) => {
                 projectData.elements.push({
                     id: element.id,
-                    type: element.classList.contains('canvas-text') ? 'text' : 'image',
+                    type: element.classList.contains('canvas-text') ? 'text' : 
+                          element.classList.contains('canvas-image') ? 'image' : 
+                          element.classList.contains('canvas-shape') ? 'shape' : 'unknown',
                     style: element.style.cssText,
                     content: element.innerHTML || element.src,
                     position: {
@@ -593,7 +997,7 @@
             alert('✅ 프로젝트가 저장되었습니다!\n\n저장 시간: ' + new Date().toLocaleString());
             console.log('💾 프로젝트 저장 완료:', projectData);
         }
-        
+
         // ========== 플레이어 기능 ==========
         let currentMode = 'edit';
         let isPlaying = false;
@@ -869,7 +1273,7 @@
             }, 3000);
         }
         
-// ========== 템플릿 및 기타 로드 ==========
+        // ========== 템플릿 및 기타 로드 ==========
         
         // PPT 편집기 템플릿 로드
         fetch('templates/ppt-editor.html')
@@ -923,6 +1327,9 @@
                         element = document.createElement('img');
                         element.className = 'canvas-element canvas-image';
                         element.src = elementData.content;
+                    } else if (elementData.type === 'shape') {
+                        element = document.createElement('div');
+                        element.className = 'canvas-element canvas-shape';
                     }
                     
                     if (element) {
@@ -989,7 +1396,7 @@
         
         // 페이지 로드 완료 시 초기화 및 자동 불러오기
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장');
+            console.log('🎬 편집기 로드 완료 - 플레이어 기능 내장, 크기 조절 기능 추가');
             
             // 저장된 프로젝트 자동 불러오기
             if (loadProject()) {
