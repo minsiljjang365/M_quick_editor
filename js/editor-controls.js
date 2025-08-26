@@ -63,11 +63,28 @@ function addQuickText() {
     // 클릭 이벤트 - 요소 선택 및 탭 이동
     textElement.onclick = function(e) {
         e.stopPropagation();
+        
+        // 직접 선택 처리
+        if (typeof window.selectedElement !== 'undefined') {
+            // 이전 선택 해제
+            if (window.selectedElement) {
+                window.selectedElement.style.border = '1px dashed transparent';
+            }
+        }
+        
+        // 현재 요소 선택
+        window.selectedElement = this;
+        this.style.border = '2px solid #007bff';
+        
+        // selectElement 함수가 있으면 호출
         if (typeof selectElement === 'function') {
             selectElement(this);
         }
+        
         switchEditorTab('text');
         loadTextToEditor(this);
+        
+        console.log('텍스트 요소 선택됨:', this);
     };
     
     // 텍스트 변경 시 동기화
@@ -123,11 +140,24 @@ function addQuickImage() {
                 // 클릭 이벤트 - 요소 선택 및 탭 이동
                 imgElement.onclick = function(e) {
                     e.stopPropagation();
+                    
+                    // 직접 선택 처리
+                    if (typeof window.selectedElement !== 'undefined') {
+                        if (window.selectedElement) {
+                            window.selectedElement.style.border = '1px dashed transparent';
+                        }
+                    }
+                    
+                    window.selectedElement = this;
+                    this.style.border = '2px solid #007bff';
+                    
                     if (typeof selectElement === 'function') {
                         selectElement(this);
                     }
                     switchEditorTab('image');
                     loadImageToEditor(this);
+                    
+                    console.log('이미지 요소 선택됨:', this);
                 };
                 
                 canvas.appendChild(imgElement);
@@ -175,11 +205,24 @@ function addQuickShape(shapeType) {
     // 클릭 이벤트 - 요소 선택 및 탭 이동
     shapeElement.onclick = function(e) {
         e.stopPropagation();
+        
+        // 직접 선택 처리
+        if (typeof window.selectedElement !== 'undefined') {
+            if (window.selectedElement) {
+                window.selectedElement.style.border = '1px dashed transparent';
+            }
+        }
+        
+        window.selectedElement = this;
+        this.style.border = '2px solid #007bff';
+        
         if (typeof selectElement === 'function') {
             selectElement(this);
         }
         switchEditorTab('shape');
         loadShapeToEditor(this);
+        
+        console.log('도형 요소 선택됨:', this);
     };
     
     canvas.appendChild(shapeElement);
@@ -219,11 +262,24 @@ function addQuickVideo() {
             // 클릭 이벤트 - 요소 선택 및 탭 이동
             videoElement.onclick = function(e) {
                 e.stopPropagation();
+                
+                // 직접 선택 처리
+                if (typeof window.selectedElement !== 'undefined') {
+                    if (window.selectedElement) {
+                        window.selectedElement.style.border = '1px dashed transparent';
+                    }
+                }
+                
+                window.selectedElement = this;
+                this.style.border = '2px solid #007bff';
+                
                 if (typeof selectElement === 'function') {
                     selectElement(this);
                 }
                 switchEditorTab('video');
                 loadVideoToEditor(this);
+                
+                console.log('비디오 요소 선택됨:', this);
             };
             
             canvas.appendChild(videoElement);
@@ -266,11 +322,24 @@ function addQuickAudio() {
             // 클릭 이벤트 - 요소 선택 및 탭 이동
             audioElement.onclick = function(e) {
                 e.stopPropagation();
+                
+                // 직접 선택 처리
+                if (typeof window.selectedElement !== 'undefined') {
+                    if (window.selectedElement) {
+                        window.selectedElement.style.border = '1px dashed transparent';
+                    }
+                }
+                
+                window.selectedElement = this;
+                this.style.border = '2px solid #007bff';
+                
                 if (typeof selectElement === 'function') {
                     selectElement(this);
                 }
                 switchEditorTab('audio');
                 loadAudioToEditor(this);
+                
+                console.log('오디오 요소 선택됨:', this);
             };
             
             canvas.appendChild(audioElement);
