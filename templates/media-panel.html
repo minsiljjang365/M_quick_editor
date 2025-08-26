@@ -1,0 +1,95 @@
+<div class="source-item">
+    <div class="source-item-title">📤 직접 업로드</div>
+    <input type="file" accept="image/*,video/*" onchange="uploadFile(this)" style="width: 100%; margin-top: 5px; font-size: 11px;">
+</div>
+
+<div class="source-item">
+    <div class="source-item-title">🌐 무료 이미지</div>
+    <div class="source-item-desc">API로 무료 이미지 검색</div>
+    <input type="text" placeholder="검색어 입력" id="stock-image-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+    <button onclick="searchStockImages()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">이미지 검색</button>
+    <div id="image-search-results" style="margin-top: 10px;"></div>
+</div>
+
+<div class="source-item">
+    <div class="source-item-title">🎬 무료 동영상</div>
+    <div class="source-item-desc">API로 무료 동영상 검색</div>
+    <input type="text" placeholder="검색어 입력" id="stock-video-search" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px;">
+    <button onclick="searchStockVideos()" style="width: 100%; margin-top: 5px; padding: 5px; background: #0066cc; border: none; color: white; border-radius: 3px; cursor: pointer;">동영상 검색</button>
+    <div id="video-search-results" style="margin-top: 10px;"></div>
+</div>
+
+<!-- 1. 텍스트 → 이미지 생성 -->
+<div class="ai-generation-section">
+    <div class="ai-section-header">🎨 AI 이미지 생성 (텍스트 → 이미지)</div>
+    <div class="ai-section-content">
+        <div class="model-selector">
+            <label>모델 선택</label>
+            <select id="text-to-image-model">
+                <option value="fal-ai/flux/schnell">Flux Schnell (빠름)</option>
+                <option value="fal-ai/flux/dev">Flux Dev (고품질)</option>
+                <option value="fal-ai/stable-diffusion-v3-medium">Stable Diffusion v3</option>
+                <option value="fal-ai/aura-flow">Aura Flow</option>
+            </select>
+        </div>
+        <textarea placeholder="생성할 이미지 설명&#10;예: A cozy coffee shop with warm lighting" id="ai-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+        <button onclick="generateAIImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #9b59b6; border: none; color: white; border-radius: 3px; cursor: pointer;">생성</button>
+        <div id="ai-image-result" style="margin-top: 10px;"></div>
+    </div>
+</div>
+
+<!-- 2. 이미지 → 이미지 변환 -->
+<div class="ai-generation-section">
+    <div class="ai-section-header">🔄 AI 이미지 변환 (이미지 → 이미지)</div>
+    <div class="ai-section-content">
+        <div class="model-selector">
+            <label>모델 선택</label>
+            <select id="image-to-image-model">
+                <option value="fal-ai/flux/dev/image-to-image">Flux Dev (추천)</option>
+                <option value="fal-ai/flux/schnell/image-to-image">Flux Schnell (빠름)</option>
+                <option value="fal-ai/stable-diffusion-v3-medium/image-to-image">Stable Diffusion v3</option>
+            </select>
+        </div>
+        <input type="file" accept="image/*" id="ai-image-to-image-file" style="width: 100%; margin-top: 5px; font-size: 11px;">
+        <textarea placeholder="변환 설명&#10;예: make it look like a painting" id="ai-image-to-image-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+        <button onclick="generateImageToImage()" style="width: 100%; margin-top: 5px; padding: 5px; background: #e67e22; border: none; color: white; border-radius: 3px; cursor: pointer;">변환</button>
+        <div id="ai-image-to-image-result" style="margin-top: 10px;"></div>
+    </div>
+</div>
+
+<!-- 3. 텍스트 → 동영상 생성 -->
+<div class="ai-generation-section">
+    <div class="ai-section-header">🎬 AI 동영상 생성 (텍스트 → 동영상)</div>
+    <div class="ai-section-content">
+        <div class="model-selector">
+            <label>모델 선택</label>
+            <select id="text-to-video-model">
+                <option value="fal-ai/luma-dream-machine">Luma Dream Machine (추천)</option>
+                <option value="fal-ai/runway-gen3">Runway Gen3</option>
+                <option value="fal-ai/stable-video">Stable Video</option>
+            </select>
+        </div>
+        <textarea placeholder="동영상 설명&#10;예: A person walking in a beautiful garden" id="ai-text-to-video-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+        <button onclick="generateTextToVideo()" style="width: 100%; margin-top: 5px; padding: 5px; background: #2980b9; border: none; color: white; border-radius: 3px; cursor: pointer;">생성 (1-3분)</button>
+        <div id="ai-text-to-video-result" style="margin-top: 10px;"></div>
+    </div>
+</div>
+
+<!-- 4. 이미지 → 동영상 생성 -->
+<div class="ai-generation-section">
+    <div class="ai-section-header">📹 AI 이미지 애니메이션 (이미지 → 동영상)</div>
+    <div class="ai-section-content">
+        <div class="model-selector">
+            <label>모델 선택</label>
+            <select id="image-to-video-model">
+                <option value="fal-ai/luma-dream-machine">Luma Dream Machine (추천)</option>
+                <option value="fal-ai/runway-gen3">Runway Gen3</option>
+                <option value="fal-ai/stable-video">Stable Video</option>
+            </select>
+        </div>
+        <input type="file" accept="image/*" id="ai-image-to-video-file" style="width: 100%; margin-top: 5px; font-size: 11px;">
+        <textarea placeholder="애니메이션 설명 (선택사항)&#10;예: animate this image smoothly" id="ai-image-to-video-prompt" style="width: 100%; margin-top: 5px; padding: 5px; background: #555; border: none; color: white; border-radius: 3px; resize: none;" rows="2"></textarea>
+        <button onclick="generateImageToVideo()" style="width: 100%; margin-top: 5px; padding: 5px; background: #27ae60; border: none; color: white; border-radius: 3px; cursor: pointer;">애니메이션 (1-3분)</button>
+        <div id="ai-image-to-video-result" style="margin-top: 10px;"></div>
+    </div>
+</div>
